@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PersonController;
 use App\Http\Controllers\TagController;
+use App\Http\Controllers\UploadController;
 use App\Http\Middleware\IsUserAuth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -20,5 +21,7 @@ Route::middleware([IsUserAuth::class])->group(function () {
         Route::put('update/{id}',[PersonController::class,'UpdatePerson']);
         Route::delete('delete/{id}',[PersonController::class,'DeletePerson']);
         Route::post('add-tag/{id}',[TagController::class,'AddTag']);
+        Route::post('/person/upload/image/{personId}', [UploadController::class, 'uploadImage']);
+        Route::post('/person/upload/video/{personId}', [UploadController::class, 'uploadVideo']);
     });
 });
