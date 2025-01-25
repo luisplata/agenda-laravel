@@ -49,6 +49,9 @@ class AuthController extends Controller
             if(!$token = JWTAuth::attempt($credentials)){
                 return response()->json(['message' => 'Credenciales incorrectas'], 401);
             }
+            $user = User::where('email', $request->email)->first();
+            $user->token = $token;
+            $user->save();
             return response()->json(['token' => $token]);
         }catch (JWTException $e){
             return response()->json(['message' => 'No se pudo crear el token'], 500);

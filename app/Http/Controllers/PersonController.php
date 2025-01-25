@@ -4,13 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Models\Person;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class PersonController extends Controller
 {
     //
     public function CreatePerson(Request $request)
     {
-        $validatedData = $request->validate([
+        $validatedData = Validator::make($request->all(),
+            [
             'nombre' => 'required|max:255',
             'about' => 'required',
             'horario' => 'required',
@@ -40,6 +42,7 @@ class PersonController extends Controller
         if($people->isEmpty()){
             return response()->json(['message' => 'No hay personas registradas'], 404);
         }
+        $people->load('tags');
         return response()->json($people);
     }
 
@@ -49,6 +52,7 @@ class PersonController extends Controller
         if($person === null){
             return response()->json(['message' => 'Persona no encontrada'], 404);
         }
+        $person->load('tags');
         return response()->json($person);
     }
 
@@ -58,7 +62,8 @@ class PersonController extends Controller
         if($person === null){
             return response()->json(['message' => 'Persona no encontrada'], 404);
         }
-        $validatedData = $request->validate([
+        $validatedData = Validator::make($request->all(),
+            [
             'nombre' => 'required|max:255',
             'about' => 'required',
             'horario' => 'required',

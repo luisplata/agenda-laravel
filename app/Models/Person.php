@@ -6,5 +6,19 @@ use Illuminate\Database\Eloquent\Model;
 
 class Person extends Model
 {
-    //
+
+    protected $fillable = [
+        'nombre',
+        'about',
+        'horario',
+        'tarifa',
+        'whatsapp',
+        'telegram',
+        'mapa',
+    ];
+
+    public function tags()
+    {
+        return $this->hasMany(Tag::class);
+    }
 }

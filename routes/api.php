@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PersonController;
+use App\Http\Controllers\TagController;
 use App\Http\Middleware\IsUserAuth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -11,6 +12,7 @@ Route::post('login', [AuthController::class, 'Login']);
 Route::get('people',[PersonController::class,'GetPeople']);
 Route::get('people/{id}',[PersonController::class,'GetPerson']);
 
+//$middleware->append(IsUserAuth::class);
 Route::middleware([IsUserAuth::class])->group(function () {
     Route::controller(AuthController::class)->group(function () {
         Route::get('me', 'GetUser');
@@ -18,5 +20,6 @@ Route::middleware([IsUserAuth::class])->group(function () {
         Route::post('create',[PersonController::class,'CreatePerson']);
         Route::put('update/{id}',[PersonController::class,'UpdatePerson']);
         Route::delete('delete/{id}',[PersonController::class,'DeletePerson']);
+        Route::post('add-tag/{id}',[TagController::class,'AddTag']);
     });
 });
