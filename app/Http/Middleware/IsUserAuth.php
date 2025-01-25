@@ -15,8 +15,13 @@ class IsUserAuth
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if(!auth('api')->user()){
-            return response()->json(['message' => 'No autorizado'], 401);
+        $token = $request->input('token');
+        if(!$token){
+            return response()->json(['message' => 'No autorizado porque no encontro el token'], 401);
+        }
+        auth()->setToken($token);
+        if (!auth()->check()) {
+            return response()->json(['message' => 'No autorizado porque el token no es valido'], 401);
         }
         return $next($request);
     }

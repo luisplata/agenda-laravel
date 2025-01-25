@@ -12,7 +12,6 @@ Route::post('login', [AuthController::class, 'Login']);
 Route::get('people',[PersonController::class,'GetPeople']);
 Route::get('people/{id}',[PersonController::class,'GetPerson']);
 
-//$middleware->append(IsUserAuth::class);
 Route::middleware([IsUserAuth::class])->group(function () {
     Route::controller(AuthController::class)->group(function () {
         Route::get('me', 'GetUser');
