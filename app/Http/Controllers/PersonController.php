@@ -43,6 +43,7 @@ class PersonController extends Controller
             return response()->json(['message' => 'No hay personas registradas'], 404);
         }
         $people->load('tags');
+        $people->load('media');
         return response()->json($people);
     }
 
@@ -53,6 +54,7 @@ class PersonController extends Controller
             return response()->json(['message' => 'Persona no encontrada'], 404);
         }
         $person->load('tags');
+        $person->load('media');
         return response()->json($person);
     }
 
