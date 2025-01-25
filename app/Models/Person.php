@@ -21,4 +21,9 @@ class Person extends Model
     {
         return $this->hasMany(Tag::class);
     }
+
+    public function media()
+    {
+        return $this->hasMany(Media::class);
+    }
 }

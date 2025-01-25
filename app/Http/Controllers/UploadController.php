@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Media;
+use App\Models\Person;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -12,6 +13,12 @@ class UploadController extends Controller
     //
     public function uploadImage(Request $request, $personId)
     {
+        $person = Person::find($personId);
+
+        if ($person === null) {
+            return response()->json(['message' => 'Persona no encontrada'], 404);
+        }
+
         // Validar que el archivo sea una imagen
         $validate = Validator::make($request->all(),            [
             'file' => 'required|image|mimes:jpg,jpeg,png,gif|max:2048', // Máximo 2 MB
@@ -22,12 +29,12 @@ class UploadController extends Controller
         }
 
         // Guardar la imagen en el disco
-        $filePath = $request->file('file')->store('images', 'public_html');
+        $filePath = $request->file('file')->store('images', env('TYPE_STORAGE', 'public'));
 
         // Guardar en la base de datos
         $media = Media::create([
             'type' => 'image',
-            'file_path' => $filePath,
+            'file_path' => 'storage/'.$filePath,
             'person_id' => $personId,
         ]);
 
@@ -49,12 +56,12 @@ class UploadController extends Controller
         }
 
         // Guardar el video en el disco
-        $filePath = $request->file('file')->store('videos', 'public_html');
+        $filePath = $request->file('file')->store('videos', env('TYPE_STORAGE', 'public'));
 
         // Guardar en la base de datos
         $media = Media::create([
             'type' => 'video',
-            'file_path' => $filePath,
+            'file_path' => 'storage/'.$filePath,
             'person_id' => $personId,
         ]);
 

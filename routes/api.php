@@ -21,7 +21,7 @@ Route::middleware([IsUserAuth::class])->group(function () {
         Route::put('update/{id}',[PersonController::class,'UpdatePerson']);
         Route::delete('delete/{id}',[PersonController::class,'DeletePerson']);
         Route::post('add-tag/{id}',[TagController::class,'AddTag']);
-        Route::post('/person/upload/image/{personId}', [UploadController::class, 'uploadImage']);
-        Route::post('/person/upload/video/{personId}', [UploadController::class, 'uploadVideo']);
+        Route::post('upload/image/{personId}', [UploadController::class, 'uploadImage']);
+        Route::post('upload/video/{personId}', [UploadController::class, 'uploadVideo']);
     });
 });
