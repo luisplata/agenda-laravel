@@ -83,7 +83,7 @@ jobs:
         run: ./gradlew test --no-daemon
 
       - name: Publicar Reportes de Pruebas (Opcional)
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: karate-reports
           path: Karate/build/reports/tests/test/
