@@ -50,6 +50,7 @@ jobs:
           }
 
   karate-tests:
+    needs: deploy
     runs-on: ubuntu-latest
 
     steps:
