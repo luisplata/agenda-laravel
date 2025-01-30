@@ -5,10 +5,10 @@ Feature: Get all persons
         * path '/people'
         * method get
         * status 200
-        Then match response == '#[]'
+        * match response == '#[]'
 
     Scenario: Valid to response will be array
-        And assert response.length > 0
+        Then assert response.length > 0
 
     Scenario: Valid data from response
         Then match $[0].id == '#number'
