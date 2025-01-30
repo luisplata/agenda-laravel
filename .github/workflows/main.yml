@@ -48,3 +48,41 @@ jobs:
           } > $LOG_FILE 2>&1 || {
             echo "An error occurred during deployment. See $LOG_FILE for details."
           }
+
+  karate-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout el código
+        uses: actions/checkout@v3
+
+      - name: Configurar JDK 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Configurar Caché de Gradle (Opcional, mejora velocidad)
+        uses: actions/cache@v3
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: ${{ runner.os }}-gradle-
+
+      - name: Dar permisos a `gradlew`
+        working-directory: Karate
+        run: chmod +x gradlew
+
+      - name: Instalar dependencias y compilar con Gradle
+        working-directory: Karate
+        run: ./gradlew build --no-daemon
+
+      - name: Ejecutar Pruebas de Karate con Gradle
+        working-directory: Karate
+        run: ./gradlew test --no-daemon
+
+      - name: Publicar Reportes de Pruebas (Opcional)
+        uses: actions/upload-artifact@v3
+        with:
+          name: karate-reports
+          path: Karate/build/reports/tests/test/

@@ -1,0 +1,38 @@
+/.idea
+.idea
+# Ignorar archivos de compilación de Java
+*.class
+*.log
+
+# Ignorar archivos de configuración del IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+/.vscode/
+.DS_Store
+
+# Ignorar binarios y carpetas de compilación
+bin/
+out/
+target/
+build/
+.gradle/
+.mvn/
+!build.gradle
+!pom.xml
+
+# Ignorar cachés y archivos generados por Karate
+karate-output/
+karate-reports/
+karate.log
+reports/
+test-output/
+karate-summary.html
+karate-summary-json.txt
+karate-config.js~
+
+# Ignorar configuraciones específicas de usuario
+*.swp
+*.swo
+*.bak
