@@ -71,19 +71,19 @@ jobs:
           restore-keys: ${{ runner.os }}-gradle-
 
       - name: Dar permisos a `gradlew`
-        working-directory: Karate
+        working-directory: Karate/Agenda
         run: chmod +x gradlew
 
       - name: Instalar dependencias y compilar con Gradle
-        working-directory: Karate
+        working-directory: Karate/Agenda
         run: ./gradlew build --no-daemon
 
       - name: Ejecutar Pruebas de Karate con Gradle
-        working-directory: Karate
+        working-directory: Karate/Agenda
         run: ./gradlew test --no-daemon
 
       - name: Publicar Reportes de Pruebas (Opcional)
         uses: actions/upload-artifact@v4
         with:
           name: karate-reports
-          path: Karate/build/reports/tests/test/
+          path: Karate/Agenda/build/reports/tests/test/
