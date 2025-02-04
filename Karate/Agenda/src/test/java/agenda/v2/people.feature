@@ -1,7 +1,7 @@
 Feature: People API
 
     Scenario: Get all people
-        Given url 'http://127.0.0.1:8000/api/people'
+        Given url 'https://backend.newpage.peryloth.com/api/people'
         When method get
         Then status 200
         And match response != null
