@@ -70,4 +70,23 @@ class UploadController extends Controller
             'media' => $media,
         ], 201);
     }
+
+    public function deleteMedia($mediaId)
+    {
+        $media = Media::find($mediaId);
+
+        if ($media === null) {
+            return response()->json(['message' => 'Media no encontrada'], 404);
+        }
+
+        // Eliminar el archivo del disco
+        $filePath = str_replace('storage/', '', $media->file_path);
+        Storage::disk(env('TYPE_STORAGE', 'public'))->delete($filePath);
+
+        // Eliminar de la base de datos
+        $media->delete();
+
+        return response()->json(['message' => 'Media eliminada exitosamente']);
+    }
+
 }

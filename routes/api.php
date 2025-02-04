@@ -23,6 +23,10 @@ Route::middleware([IsUserAuth::class])->group(function () {
     Route::put('update/{id}', [PersonController::class, 'UpdatePerson']);
     Route::delete('delete/{id}', [PersonController::class, 'DeletePerson']);
     Route::post('add-tag/{id}', [TagController::class, 'AddTag']);
+    Route::put('update-tag/{id}', [TagController::class, 'UpdateTag']);
+    Route::delete('delete-tag/{id}', [TagController::class, 'DeleteTag']);
     Route::post('upload/image/{personId}', [UploadController::class, 'uploadImage']);
     Route::post('upload/video/{personId}', [UploadController::class, 'uploadVideo']);
+    Route::delete('upload/image/{mediaId}', [UploadController::class, 'deleteMedia']);
+    Route::delete('upload/video/{mediaId}', [UploadController::class, 'deleteMedia']);
 });
