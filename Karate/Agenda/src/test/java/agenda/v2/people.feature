@@ -12,3 +12,10 @@ Feature: People API
         When method get
         Then status 200
         And match response.id == personId.personId
+
+    Scenario: Increment views by ID
+        * def personId = call read('person.feature@createPerson')
+        Given url 'https://backend.newpage.peryloth.com/api/increment/' + personId.personId
+        When method get
+        Then status 200
+        And match response contains { views: '#notnull' }

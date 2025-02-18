@@ -55,16 +55,6 @@ class PersonController extends Controller
             return response()->json(['message' => 'Persona no encontrada'], 404);
         }
 
-        $tag = Tag::where('person_id', $person->id)
-            ->where('tipo', 'views')
-            ->first();
-        if ($tag) {
-            $tag->valor = (int)$tag->valor + 1; // Convertir a número, incrementar y guardar
-            $tag->save();
-        } else {
-            Tag::CreateTag($person,"1","views");
-        }
-
         $person->load('tags');
         $person->load('media');
         return response()->json($person);
@@ -108,5 +98,25 @@ class PersonController extends Controller
         }
         $person->delete();
         return response()->json(['message' => 'Persona eliminada']);
+    }
+
+    public function IncrementView($id)
+    {
+        $person = Person::find($id);
+        if ($person === null) {
+            return response()->json(['message' => 'Persona no encontrada'], 404);
+        }
+
+        $tag = Tag::where('person_id', $person->id)
+            ->where('tipo', 'views')
+            ->first();
+        $view = $tag->valor;
+        if ($tag) {
+            $tag->valor = (int)$tag->valor + 1; // Convertir a número, incrementar y guardar
+            $tag->save();
+        } else {
+            Tag::CreateTag($person, "1", "views");
+        }
+        return response()->json(["message" => "Ok", "views" => $view]);
     }
 }
