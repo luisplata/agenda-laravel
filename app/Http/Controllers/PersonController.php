@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Person;
+use App\Models\Tag;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -13,15 +14,15 @@ class PersonController extends Controller
     {
         $validatedData = Validator::make($request->all(),
             [
-            'nombre' => 'required|max:255',
-            'about' => 'required',
-            'horario' => 'required',
-            'tarifa' => 'required',
-            'whatsapp' => 'required',
-            'telegram' => 'required',
-            'mapa' => 'required',
-        ]);
-        if($validatedData->fails()){
+                'nombre' => 'required|max:255',
+                'about' => 'required',
+                'horario' => 'required',
+                'tarifa' => 'required',
+                'whatsapp' => 'required',
+                'telegram' => 'required',
+                'mapa' => 'required',
+            ]);
+        if ($validatedData->fails()) {
             return response()->json($validatedData->errors(), 422);
         }
         $person = Person::create([
@@ -39,7 +40,7 @@ class PersonController extends Controller
     public function GetPeople()
     {
         $people = Person::all();
-        if($people->isEmpty()){
+        if ($people->isEmpty()) {
             return response()->json(['message' => 'No hay personas registradas'], 404);
         }
         $people->load('tags');
@@ -50,9 +51,20 @@ class PersonController extends Controller
     public function GetPerson($id)
     {
         $person = Person::find($id);
-        if($person === null){
+        if ($person === null) {
             return response()->json(['message' => 'Persona no encontrada'], 404);
         }
+
+        $tag = Tag::where('person_id', $person->id)
+            ->where('tipo', 'views')
+            ->first();
+        if ($tag) {
+            $tag->valor = (int)$tag->valor + 1; // Convertir a número, incrementar y guardar
+            $tag->save();
+        } else {
+            Tag::CreateTag($person,"1","views");
+        }
+
         $person->load('tags');
         $person->load('media');
         return response()->json($person);
@@ -61,20 +73,20 @@ class PersonController extends Controller
     public function UpdatePerson(Request $request, $id)
     {
         $person = Person::find($id);
-        if($person === null){
+        if ($person === null) {
             return response()->json(['message' => 'Persona no encontrada'], 404);
         }
         $validatedData = Validator::make($request->all(),
             [
-            'nombre' => 'required|max:255',
-            'about' => 'required',
-            'horario' => 'required',
-            'tarifa' => 'required',
-            'whatsapp' => 'required',
-            'telegram' => 'required',
-            'mapa' => 'required',
-        ]);
-        if($validatedData->fails()){
+                'nombre' => 'required|max:255',
+                'about' => 'required',
+                'horario' => 'required',
+                'tarifa' => 'required',
+                'whatsapp' => 'required',
+                'telegram' => 'required',
+                'mapa' => 'required',
+            ]);
+        if ($validatedData->fails()) {
             return response()->json($validatedData->errors(), 422);
         }
         $person->nombre = $request->nombre;
@@ -91,7 +103,7 @@ class PersonController extends Controller
     public function DeletePerson($id)
     {
         $person = Person::find($id);
-        if($person === null){
+        if ($person === null) {
             return response()->json(['message' => 'Persona no encontrada'], 404);
         }
         $person->delete();
