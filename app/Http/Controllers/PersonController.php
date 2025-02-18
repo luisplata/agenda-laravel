@@ -110,10 +110,11 @@ class PersonController extends Controller
         $tag = Tag::where('person_id', $person->id)
             ->where('tipo', 'views')
             ->first();
-        $view = $tag->valor;
+        $view = 1;
         if ($tag) {
             $tag->valor = (int)$tag->valor + 1; // Convertir a número, incrementar y guardar
             $tag->save();
+            $view = $tag->valor;
         } else {
             Tag::CreateTag($person, "1", "views");
         }
