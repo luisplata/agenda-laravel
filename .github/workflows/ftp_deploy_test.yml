@@ -1,6 +1,7 @@
 ﻿name: FTP Deployment Test (FTPS)
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
