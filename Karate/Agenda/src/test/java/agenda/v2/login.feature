@@ -1,7 +1,7 @@
 Feature: Login API
 
     Scenario: Unsuccessful login
-        Given url 'https://backend.newpage.peryloth.com/api/login'
+        Given url 'https://back.agenda.peryloth.com/api/login'
         And request { "email": "test@example.com", "password": "wrongpassword" }
         When method post
         Then status 401
@@ -9,7 +9,7 @@ Feature: Login API
 
     @login_success
     Scenario: Successful login
-        Given url 'https://backend.newpage.peryloth.com/api/login'
+        Given url 'https://back.agenda.peryloth.com/api/login'
         And request { "email": "test@example.com", "password": "password" }
         When method post
         Then status 200

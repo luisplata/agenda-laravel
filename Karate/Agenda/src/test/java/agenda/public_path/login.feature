@@ -1,7 +1,7 @@
 Feature: Test Login about agenda API
 
     Background:
-        * url 'https://backend.newpage.peryloth.com/api'
+        * url 'https://back.agenda.peryloth.com/api'
         * def loginEndpoint = '/login'
 
     @login_success

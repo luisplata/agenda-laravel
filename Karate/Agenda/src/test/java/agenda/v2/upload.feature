@@ -1,7 +1,7 @@
 Feature: Upload API
 
     Background:
-        * url 'https://backend.newpage.peryloth.com/api'
+        * url 'https://back.agenda.peryloth.com/api'
         * def token = call read('login.feature@login_success') { email: 'test@example.com', password: 'password' }
 
     @UploadImage
