@@ -1,0 +1,26 @@
+﻿name: FTP Deployment Test (FTPS)
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Create test file
+        run: echo "Prueba de conexión FTPS" > test.txt
+
+      - name: Upload file using FTPS
+        run: |
+          curl --ftp-ssl --ftp-pasv -T test.txt \
+            --user "${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}" \
+            --connect-timeout 30 \
+            --retry 3 \
+            --retry-delay 5 \
+            ftps://${{ secrets.FTP_HOST }}/public_html/test.txt

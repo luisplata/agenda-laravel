@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('media', function (Blueprint $table) {
             $table->id();
-            $table->string('type'); // 'image' o 'video'
-            $table->string('file_path'); // Ruta del archivo almacenado
+            $table->string('type')->default("image"); // 'image' o 'video'
+            $table->string('file_path')->default("path/to/file");
             $table->unsignedBigInteger('person_id');
             $table->timestamps();
             $table->foreign('person_id')->references('id')->on('people')->onDelete('cascade');

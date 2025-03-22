@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('tags', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('person_id');
-            $table->string('tipo');
-            $table->string('valor');
+            $table->string('tipo')->default("tag");
+            $table->string('valor')->default("tag-value");
             $table->timestamps();
             $table->foreign('person_id')->references('id')->on('people')->onDelete('cascade');
         });
