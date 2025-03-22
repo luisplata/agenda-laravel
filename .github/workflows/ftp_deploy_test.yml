@@ -18,11 +18,11 @@ jobs:
         run: |
           echo "Hello World $(date '+%Y-%m-%d %H:%M:%S')" > test.txt
 
-      - name: Upload file using FTPS
+      - name: Upload file using FTPS explicit (TLS)
         run: |
-          curl --ftp-ssl --ftp-pasv -T test.txt \
+          curl --ftp-ssl-control --ftp-pasv -T test.txt \
             --user "${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}" \
             --connect-timeout 30 \
             --retry 3 \
             --retry-delay 5 \
-            ftps://${{ secrets.FTP_HOST }}/public_html/test.txt
+            ftp://${{ secrets.FTP_HOST }}:21/public_html/test.txt
