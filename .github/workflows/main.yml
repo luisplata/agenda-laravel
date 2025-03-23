@@ -33,15 +33,9 @@ jobs:
         run: |
           composer install --no-interaction --prefer-dist
 
-      - name: Create .env.testing file for CI
+      - name: Set up .env.testing for CI
         run: |
-          cp .env.example .env.testing
-          echo "APP_ENV=testing" >> .env
-          echo "DB_CONNECTION=sqlite" >> .env
-          echo "DB_DATABASE=:memory:" >> .env
-          echo "CACHE_DRIVER=array" >> .env
-          echo "QUEUE_CONNECTION=sync" >> .env
-
+          cp .env.testing .env
 
       - name: Run migrations (Testing Environment)
         run: php artisan migrate --env=testing
