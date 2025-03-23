@@ -30,12 +30,25 @@ jobs:
           tools: composer
 
       - name: Install dependencies
-        run: |
-          composer install --no-interaction --prefer-dist
+        run: composer install --no-interaction --prefer-dist
 
-      - name: Run Feature Tests
+      - name: Create SQLite Database (if using SQLite)
+        run: touch database/database.sqlite
+
+      - name: Create .env.testing file for CI
         run: |
-          php artisan test --parallel --stop-on-failure --testsuite=Feature
+          cp .env.example .env
+          echo "APP_ENV=testing" >> .env
+          echo "DB_CONNECTION=sqlite" >> .env
+          echo "DB_DATABASE=:memory:" >> .env
+          echo "CACHE_DRIVER=array" >> .env
+          echo "QUEUE_CONNECTION=sync" >> .env
+
+      - name: Run migrations
+        run: php artisan migrate --env=testing
+
+      - name: Run Unit Tests
+        run: php artisan test --parallel --stop-on-failure --env=testing
 
   deploy:
     needs: unit-tests
