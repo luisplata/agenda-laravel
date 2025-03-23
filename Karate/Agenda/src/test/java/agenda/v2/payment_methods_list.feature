@@ -1,7 +1,7 @@
 ﻿Feature: List Payment Methods
 
     Background:
-        * url 'http://localhost/api'  # Cambia la URL según tu entorno
+        * url 'https://back.agenda.peryloth.com/api/login'
 
     Scenario: Retrieve list of payment methods
         Given path 'payment_methods_list'
