@@ -4,7 +4,7 @@
         * url 'https://back.agenda.peryloth.com/api'
 
     Scenario: Successful user registration
-        * def randomEmail = 'user_' + karate.millis() + '@example.com'
+        * def randomEmail = 'user_' + java.lang.System.currentTimeMillis() + '@example.com'
         Given path 'register'
         And request { "name": "John Doe", "email": "#(randomEmail)", "password": "secret123", "password_confirmation": "secret123" }
         When method POST
