@@ -1,0 +1,54 @@
+﻿name: Install Laravel Server (FTPS)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  install:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: composer
+
+      - name: Ensure FTP Deploy Path Exists
+        run: |
+          echo "Ensuring FTP deploy path exists..."
+          curl --ftp-ssl-control --ftp-pasv --user "${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}" \
+            --quote "MKD ${{ secrets.FTP_DEPLOY_PATH }}" \
+            ftp://${{ secrets.FTP_HOST }}:21 || true
+
+      - name: Install dependencies
+        run: |
+          echo "Installing composer dependencies..."
+          composer install --no-dev --optimize-autoloader
+
+      - name: Zip vendor folder
+        run: |
+          echo "Zipping vendor folder..."
+          zip -r vendor.zip vendor/
+
+      - name: Upload vendor folder
+        run: |
+          echo "Uploading vendor.zip..."
+          curl --ftp-ssl-control --ftp-pasv -T vendor.zip \
+            --user "${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}" \
+            --connect-timeout 30 \
+            --retry 3 \
+            --retry-delay 5 \
+            ftp://${{ secrets.FTP_HOST }}:21/${{ secrets.FTP_DEPLOY_PATH }}/vendor.zip
+
+      - name: Upload entire project
+        run: |
+          echo "Uploading project files..."
+          lftp -u "${{ secrets.FTP_USERNAME }},${{ secrets.FTP_PASSWORD }}" -e "
+            set ftp:ssl-allow true;
+            mirror -R ./ ${{ secrets.FTP_DEPLOY_PATH }}/;
+            bye
+          " ${{ secrets.FTP_HOST }}
