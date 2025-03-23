@@ -3,7 +3,6 @@ name: Deploy App
 on:
   pull_request:
     branches:
-      - main
       - deploy
   workflow_dispatch:
     inputs:
