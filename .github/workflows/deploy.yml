@@ -20,6 +20,9 @@ jobs:
           php-version: '8.2'
           tools: composer
 
+      - name: Install FTP tools
+        run: sudo apt-get update && sudo apt-get install -y lftp ncftp
+
       - name: Check if remote directory is empty
         id: check_remote
         run: |
