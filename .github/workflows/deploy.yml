@@ -20,6 +20,13 @@ jobs:
           php-version: '8.2'
           tools: composer
 
+      - name: Ensure FTP Deploy Path Exists
+        run: |
+          echo "Checking or creating FTP deploy path..."
+          curl --ftp-ssl-control --ftp-pasv --user "${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}" \
+            --quote "MKD ${{ secrets.FTP_DEPLOY_PATH }}" \
+            ftp://${{ secrets.FTP_HOST }}:21 || true
+
       - name: Detect composer changes
         id: check_composer
         run: |
