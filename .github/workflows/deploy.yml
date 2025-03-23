@@ -20,6 +20,19 @@ jobs:
           php-version: '8.2'
           tools: composer
 
+      - name: Check if remote directory is empty
+        id: check_remote
+        run: |
+          echo "Checking if remote directory is empty..."
+          FILE_COUNT=$(curl --ftp-ssl-control --ftp-pasv --user "${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}" \
+            ftp://${{ secrets.FTP_HOST }}:21/${{ secrets.FTP_DEPLOY_PATH }}/ --list-only | wc -l)
+
+          if [ "$FILE_COUNT" -le 1 ]; then
+            echo "remote_is_empty=true" >> $GITHUB_ENV
+          else
+            echo "remote_is_empty=false" >> $GITHUB_ENV
+          fi
+
       - name: Ensure FTP Deploy Path Exists
         run: |
           echo "Checking or creating FTP deploy path..."
@@ -54,7 +67,7 @@ jobs:
           fi
 
       - name: Install dependencies (if needed)
-        if: env.composer_changed == 'true'
+        if: env.composer_changed == 'true' || env.remote_is_empty == 'true'
         run: |
           echo "Installing composer dependencies..."
           composer install --no-dev --optimize-autoloader
@@ -76,7 +89,7 @@ jobs:
             --connect-timeout 30 \
             --retry 3 \
             --retry-delay 5 \
-            ftp://${{ secrets.FTP_HOST }}:21${{ secrets.FTP_DEPLOY_PATH }}/migrations/${{ env.SQL_DUMP_NAME }}
+            ftp://${{ secrets.FTP_HOST }}:21/${{ secrets.FTP_DEPLOY_PATH }}/migrations/${{ env.SQL_DUMP_NAME }}
 
       - name: Detect changed files
         run: |
@@ -87,7 +100,8 @@ jobs:
             cat changed_files.txt
           fi
 
-      - name: Upload modified files
+      - name: Upload modified files (if directory is not empty)
+        if: env.remote_is_empty == 'false'
         run: |
           if [ $(git rev-list --count HEAD) -gt 1 ]; then
             echo "Uploading modified files..."
@@ -99,13 +113,23 @@ jobs:
                   --connect-timeout 30 \
                   --retry 3 \
                   --retry-delay 5 \
-                  ftp://${{ secrets.FTP_HOST }}:21${{ secrets.FTP_DEPLOY_PATH }}/"$file"
+                  ftp://${{ secrets.FTP_HOST }}:21/${{ secrets.FTP_DEPLOY_PATH }}/"$file"
               fi
             done < changed_files.txt
           fi
 
+      - name: Upload full project (if remote directory is empty)
+        if: env.remote_is_empty == 'true'
+        run: |
+          echo "Uploading entire project..."
+          lftp -u "${{ secrets.FTP_USERNAME }},${{ secrets.FTP_PASSWORD }}" -e "
+            set ftp:ssl-allow true;
+            mirror -R ./ ${{ secrets.FTP_DEPLOY_PATH }}/;
+            bye
+          " ${{ secrets.FTP_HOST }}
+
       - name: Upload vendor folder (only if needed)
-        if: env.composer_changed == 'true'
+        if: env.composer_changed == 'true' || env.remote_is_empty == 'true'
         run: |
           echo "Zipping vendor folder..."
           zip -r vendor.zip vendor/
@@ -115,4 +139,4 @@ jobs:
             --connect-timeout 30 \
             --retry 3 \
             --retry-delay 5 \
-            ftp://${{ secrets.FTP_HOST }}:21${{ secrets.FTP_DEPLOY_PATH }}/vendor.zip
+            ftp://${{ secrets.FTP_HOST }}:21/${{ secrets.FTP_DEPLOY_PATH }}/vendor.zip

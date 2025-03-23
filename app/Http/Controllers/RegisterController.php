@@ -6,6 +6,8 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Database\QueryException;
+use Exception;
 
 class RegisterController extends Controller
 {
@@ -22,14 +24,20 @@ class RegisterController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        // Crear usuario con rol "Model"
-        $user = User::create([
-            'name' => $request->name,
-            'role' => 'Model',
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-        ]);
+        try {
+            // Crear usuario con rol "Model"
+            $user = User::create([
+                'name' => $request->name,
+                'role' => 'Model',
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+            ]);
 
-        return response()->json(['message' => 'User registered successfully', 'user' => $user], 201);
+            return response()->json(['message' => 'User registered successfully', 'user' => $user], 201);
+        } catch (QueryException $e) {
+            return response()->json(['error' => 'Database error', 'message' => $e->getMessage()], 500);
+        } catch (Exception $e) {
+            return response()->json(['error' => 'Server error', 'message' => $e->getMessage()], 500);
+        }
     }
 }

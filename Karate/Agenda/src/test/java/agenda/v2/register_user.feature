@@ -4,8 +4,9 @@
         * url 'https://back.agenda.peryloth.com/api'
 
     Scenario: Successful user registration
+        * def randomEmail = 'user_' + karate.timestamp() + '@example.com'
         Given path 'register'
-        And request { "name": "John Doe", "email": "john@example.com", "password": "secret123", "password_confirmation": "secret123" }
+        And request { "name": "John Doe", "email": "#(randomEmail)", "password": "secret123", "password_confirmation": "secret123" }
         When method POST
         Then status 201
         And match response.message == "User registered successfully"
