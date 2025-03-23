@@ -29,7 +29,7 @@ jobs:
           ls ${{ secrets.FTP_DEPLOY_PATH }} || mkdir ${{ secrets.FTP_DEPLOY_PATH }}
           bye
           EOF
-      
+
 
       - name: Install dependencies
         run: |
@@ -52,8 +52,13 @@ jobs:
         run: |
           echo "Uploading project files..."
           lftp -u "${{ secrets.FTP_USERNAME }},${{ secrets.FTP_PASSWORD }}" ${{ secrets.FTP_HOST }} <<EOF
-          mirror -R --verbose --parallel=5 --exclude-glob vendor.zip --exclude-glob .git --exclude-glob .github \
+          mirror -R --verbose --parallel=5 \
+            --exclude-glob vendor.zip \
+            --exclude-glob .git \
+            --exclude-glob .github \
+            --exclude-glob Karate/ \
             ./ ${{ secrets.FTP_DEPLOY_PATH }}
           bye
           EOF
           echo "Upload completed!"
+      
