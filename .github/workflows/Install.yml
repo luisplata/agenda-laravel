@@ -17,15 +17,16 @@ jobs:
           php-version: '8.2'
           tools: composer
 
-      - name: Install lftp
-        run: sudo apt-get update && sudo apt-get install -y lftp
+      - name: Install FTP tools
+        run: sudo apt-get update && sudo apt-get install -y lftp ncftp
 
       - name: Ensure FTP Deploy Path Exists
         run: |
           echo "Ensuring FTP deploy path exists..."
-          curl --ftp-ssl-control --ftp-pasv --user "${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}" \
-            --quote "MKD ${{ secrets.FTP_DEPLOY_PATH }}" \
-            ftp://${{ secrets.FTP_HOST }}:21 || true
+          lftp -u "${{ secrets.FTP_USERNAME }},${{ secrets.FTP_PASSWORD }}" ${{ secrets.FTP_HOST }} <<EOF
+          mkdir -p ${{ secrets.FTP_DEPLOY_PATH }}
+          bye
+          EOF
 
       - name: Install dependencies
         run: |
@@ -40,30 +41,16 @@ jobs:
       - name: Upload vendor folder
         run: |
           echo "Uploading vendor.zip..."
-          curl --ftp-ssl-control --ftp-pasv -T vendor.zip \
-            --user "${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}" \
-            --connect-timeout 30 \
-            --retry 3 \
-            --retry-delay 5 \
-            ftp://${{ secrets.FTP_HOST }}:21/${{ secrets.FTP_DEPLOY_PATH }}/vendor.zip
-          
-      - name: Test FTP connection
-        run: |
-          echo "Testing FTP connection..."
-          lftp -u "${{ secrets.FTP_USERNAME }},${{ secrets.FTP_PASSWORD }}" -e "
-            set ftp:ssl-force true;
-            open ${{ secrets.FTP_HOST }};
-            ls;
-            bye
-          "
+          ncftpput -u "${{ secrets.FTP_USERNAME }}" -p "${{ secrets.FTP_PASSWORD }}" \
+            -m -t 30 -R ${{ secrets.FTP_HOST }} ${{ secrets.FTP_DEPLOY_PATH }} vendor.zip
+          echo "Uploaded vendor.zip"
 
       - name: Upload entire project
         run: |
           echo "Uploading project files..."
-          lftp -u "${{ secrets.FTP_USERNAME }},${{ secrets.FTP_PASSWORD }}" -e "
-            set ftp:ssl-force true;
-            set ftp:ssl-protect-data true;
-            open ${{ secrets.FTP_HOST }};
-            mirror -R ./ ${{ secrets.FTP_DEPLOY_PATH }}/;
-            bye
-          "
+          lftp -u "${{ secrets.FTP_USERNAME }},${{ secrets.FTP_PASSWORD }}" ${{ secrets.FTP_HOST }} <<EOF
+          mirror -R --verbose --parallel=5 --exclude-glob vendor.zip --exclude-glob .git --exclude-glob .github \
+            ./ ${{ secrets.FTP_DEPLOY_PATH }}
+          bye
+          EOF
+          echo "Upload completed!"
