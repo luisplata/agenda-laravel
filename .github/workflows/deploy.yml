@@ -118,8 +118,7 @@ jobs:
             done < changed_files.txt
           fi
 
-      - name: Upload full project (if remote directory is empty)
-        if: env.remote_is_empty == 'true'
+      - name: Upload full project
         run: |
           echo "Uploading entire project..."
           lftp -u "${{ secrets.FTP_USERNAME }},${{ secrets.FTP_PASSWORD }}" -e "
