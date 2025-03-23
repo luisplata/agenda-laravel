@@ -16,41 +16,66 @@ on:
           - Production
 
 jobs:
-  deploy:
+  unit-tests:
     runs-on: ubuntu-latest
 
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: composer
+
+      - name: Install dependencies
+        run: |
+          composer install --no-dev --optimize-autoloader
+
+      - name: Run Unit Tests
+        run: php artisan test --parallel --stop-on-failure
+
+  deploy:
+    needs: unit-tests
+    runs-on: ubuntu-latest
     environment: ${{ github.event.inputs.environment || 'Dev' }}
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-    - name: Execute SSH commands
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.SSH_HOST }}
-        username: ${{ secrets.SSH_USER }}
-        password: ${{ secrets.SSH_PASSWORD }}
-        port: ${{ secrets.SSH_PORT }}
-        script: |
-          APP_DIR=$HOME/${{ secrets.APP_DIR }}
-          cd $APP_DIR
-          LOG_FILE="$APP_DIR/deployment_$(date '+%Y-%m-%d_%H-%M-%S').log"
-          {
-            git pull origin main &&
-            composer install &&
-            composer update &&
-            php artisan migrate &&
-            php artisan config:clear &&
-            php artisan config:cache &&
-            php artisan route:clear &&
-            php artisan route:cache &&
-            php artisan view:clear &&
-            php artisan view:cache &&
-            php artisan cache:clear
-          } > $LOG_FILE 2>&1 || {
-            echo "An error occurred during deployment. See $LOG_FILE for details."
-          }
+      - name: Execute SSH commands
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            APP_DIR=$HOME/${{ secrets.APP_DIR }}
+            cd $APP_DIR
+            LOG_FILE="$APP_DIR/deployment_$(date '+%Y-%m-%d_%H-%M-%S').log"
+            {
+              echo "🚀 Pulling latest changes..."
+              git pull origin main &&
+              echo "📦 Installing dependencies..."
+              composer install --no-dev --optimize-autoloader &&
+              composer update --no-dev &&
+              echo "🔄 Running migrations..."
+              php artisan migrate --force &&
+              echo "🧹 Clearing and caching Laravel config..."
+              php artisan config:clear &&
+              php artisan config:cache &&
+              php artisan route:clear &&
+              php artisan route:cache &&
+              php artisan view:clear &&
+              php artisan view:cache &&
+              php artisan cache:clear
+            } > $LOG_FILE 2>&1 || {
+              echo "❌ An error occurred during deployment. See $LOG_FILE for details."
+              exit 1
+            }
 
   karate-tests:
     needs: deploy
