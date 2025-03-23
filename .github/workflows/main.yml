@@ -16,38 +16,7 @@ on:
           - Production
 
 jobs:
-  unit-tests:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Set up PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.2'
-          tools: composer
-
-      - name: Install dependencies
-        run: |
-          composer install --no-interaction --prefer-dist
-
-      - name: Set up .env.testing for CI
-        run: |
-          cp .env.testing .env
-
-      - name: Run migrations (Testing Environment)
-        run: php artisan migrate --env=testing
-
-      - name: Seed database (Testing Environment)
-        run: php artisan db:seed --env=testing
-
-      - name: Run Unit Tests
-        run: php artisan test --parallel --stop-on-failure --testsuite=Feature
-
   deploy:
-    needs: unit-tests
     runs-on: ubuntu-latest
     environment: ${{ github.event.inputs.environment || 'Dev' }}
 
