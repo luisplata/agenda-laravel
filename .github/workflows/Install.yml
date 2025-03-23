@@ -25,7 +25,9 @@ jobs:
           echo "Ensuring FTP deploy path exists..."
           lftp -u "${{ secrets.FTP_USERNAME }},${{ secrets.FTP_PASSWORD }}" ${{ secrets.FTP_HOST }} <<EOF
           set ftp:ssl-allow no
-          mkdir ${{ secrets.FTP_DEPLOY_PATH }} || true
+          if ! -d ${{ secrets.FTP_DEPLOY_PATH }}; then
+            mkdir ${{ secrets.FTP_DEPLOY_PATH }}
+          fi
           bye
           EOF
 
