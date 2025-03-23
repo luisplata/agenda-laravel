@@ -47,6 +47,9 @@ jobs:
       - name: Run migrations
         run: php artisan migrate --env=testing
 
+      - name: Run Seeds (optional, if needed)
+        run: php artisan db:seed --env=testing
+
       - name: Run Unit Tests
         run: php artisan test --parallel --stop-on-failure --env=testing
 
