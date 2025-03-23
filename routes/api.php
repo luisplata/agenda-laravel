@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\PaymentMethodController;
 use App\Http\Controllers\PersonController;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\TagController;
@@ -14,6 +16,8 @@ Route::get('people', [PersonController::class, 'GetPeople']);
 Route::get('people/{id}', [PersonController::class, 'GetPerson']);
 Route::get('increment/{id}', [PersonController::class, 'IncrementView']);
 Route::post('register', [RegisterController::class, 'register']);
+Route::get('list_categories', [CategoryController::class, 'listCategories']);
+Route::get('payment_methods_list', [PaymentMethodController::class, 'index']);
 
 Route::middleware([IsUserAuth::class])->group(function () {
     Route::controller(AuthController::class)->group(function () {
