@@ -1,7 +1,7 @@
 ﻿Feature: List Payment Methods
 
     Background:
-        * url 'https://back.agenda.peryloth.com/api/login'
+        * url 'https://back.agenda.peryloth.com/api'
 
     Scenario: Retrieve list of payment methods
         Given path 'payment_methods_list'
