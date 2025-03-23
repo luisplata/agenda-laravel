@@ -11,7 +11,7 @@
         Then status 201
         And match response.message == "User registered successfully"
         And match response.user.name == "John Doe"
-        And match response.user.email == "john@example.com"
+        And match response.user.email == "#(randomEmail)"
         And match response.user.role == "Model"
 
     Scenario: Registration fails due to missing fields
