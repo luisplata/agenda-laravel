@@ -49,6 +49,7 @@ jobs:
       - name: Install dependencies (if needed)
         if: env.composer_changed == 'true'
         run: |
+          echo "Installing composer dependencies..."
           composer install --no-dev --optimize-autoloader
 
       - name: Generate SQL for new migrations (if needed)
@@ -56,11 +57,13 @@ jobs:
         run: |
           TIMESTAMP=$(date '+%Y-%m-%d_%H-%M-%S')
           php artisan migrate --pretend > "migrations_${TIMESTAMP}.sql"
+          echo "Generated migration file: migrations_${TIMESTAMP}.sql"
           echo "SQL_DUMP_NAME=migrations_${TIMESTAMP}.sql" >> $GITHUB_ENV
 
       - name: Upload SQL dump (if generated)
         if: env.migrations_changed == 'true'
         run: |
+          echo "Uploading SQL dump: ${{ env.SQL_DUMP_NAME }}"
           curl --ftp-ssl-control --ftp-pasv -T ${{ env.SQL_DUMP_NAME }} \
             --user "${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}" \
             --connect-timeout 30 \
@@ -68,12 +71,22 @@ jobs:
             --retry-delay 5 \
             ftp://${{ secrets.FTP_HOST }}:21${{ secrets.FTP_DEPLOY_PATH }}/migrations/${{ env.SQL_DUMP_NAME }}
 
+      - name: Detect changed files
+        run: |
+          if [ $(git rev-list --count HEAD) -gt 1 ]; then
+            echo "Detecting changed files..."
+            git diff --name-only HEAD^ HEAD > changed_files.txt
+            echo "Files to upload:"
+            cat changed_files.txt
+          fi
+
       - name: Upload modified files
         run: |
           if [ $(git rev-list --count HEAD) -gt 1 ]; then
-            git diff --name-only HEAD^ HEAD > changed_files.txt
+            echo "Uploading modified files..."
             while read file; do
               if [ -f "$file" ]; then
+                echo "Uploading: $file"
                 curl --ftp-ssl-control --ftp-pasv -T "$file" \
                   --user "${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}" \
                   --connect-timeout 30 \
@@ -87,7 +100,9 @@ jobs:
       - name: Upload vendor folder (only if needed)
         if: env.composer_changed == 'true'
         run: |
+          echo "Zipping vendor folder..."
           zip -r vendor.zip vendor/
+          echo "Uploading vendor.zip..."
           curl --ftp-ssl-control --ftp-pasv -T vendor.zip \
             --user "${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}" \
             --connect-timeout 30 \
