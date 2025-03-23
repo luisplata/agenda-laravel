@@ -1,0 +1,67 @@
+﻿name: Install Laravel Server (FTPS)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  install:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: composer
+
+      - name: Install FTP tools
+        run: sudo apt-get update && sudo apt-get install -y lftp ncftp
+
+      - name: Ensure FTP Deploy Path Exists
+        run: |
+          echo "Ensuring FTP deploy path exists..."
+          lftp -u "${{ secrets.FTP_USERNAME }},${{ secrets.FTP_PASSWORD }}" ${{ secrets.FTP_HOST }} <<EOF
+          set ftp:ssl-allow no
+          set ftp:list-options -a
+          ls ${{ secrets.FTP_DEPLOY_PATH }} || mkdir ${{ secrets.FTP_DEPLOY_PATH }}
+          bye
+          EOF
+
+
+      - name: Install dependencies
+        run: |
+          echo "Installing composer dependencies..."
+          composer install --no-dev --optimize-autoloader
+
+      - name: Zip vendor folder
+        run: |
+          echo "Zipping vendor folder..."
+          zip -r vendor.zip vendor/
+
+      - name: Upload vendor folder
+        run: |
+          echo "Uploading vendor.zip..."
+          ncftpput -u "${{ secrets.FTP_USERNAME }}" -p "${{ secrets.FTP_PASSWORD }}" \
+            -m -t 30 -R ${{ secrets.FTP_HOST }} ${{ secrets.FTP_DEPLOY_PATH }} vendor.zip
+          echo "Uploaded vendor.zip"
+
+      - name: Upload entire project
+        run: |
+          echo "Uploading project files..."
+          lftp -u "${{ secrets.FTP_USERNAME }},${{ secrets.FTP_PASSWORD }}" ${{ secrets.FTP_HOST }} <<EOF
+          mirror -R --verbose --parallel=5 \
+            --exclude-glob=vendor.zip \
+            --exclude-glob=.git \
+            --exclude-glob=.git/** \
+            --exclude-glob=.github \
+            --exclude-glob=.github/** \
+            --exclude-glob=Karate \
+            --exclude-glob=Karate/** \
+            ./ ${{ secrets.FTP_DEPLOY_PATH }}
+          bye
+          EOF
+          echo "Upload completed!"
+      

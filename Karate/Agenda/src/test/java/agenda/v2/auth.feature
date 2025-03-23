@@ -1,7 +1,7 @@
 Feature: Auth API
 
     Background:
-        * url 'https://backend.newpage.peryloth.com/api'
+        * url 'https://back.agenda.peryloth.com/api'
         * def loginResponse = call read('login.feature@login_success') { email: 'test@example.com', password: 'password' }
         * def tokenAuth = loginResponse.tokenAuth
 

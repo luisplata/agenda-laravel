@@ -1,7 +1,7 @@
 Feature: Get all persons
 
     Background:
-        * url 'https://backend.newpage.peryloth.com/api'
+        * url 'https://back.agenda.peryloth.com/api'
         * path '/people'
         * method get
         * status 200

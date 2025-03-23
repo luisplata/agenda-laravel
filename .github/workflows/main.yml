@@ -1,6 +1,10 @@
 name: Deploy App
 
 on:
+  pull_request:
+    branches:
+      - main
+      - deploy
   workflow_dispatch:
     inputs:
       environment:
@@ -16,7 +20,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
-    environment: ${{ github.event.inputs.environment }}
+    environment: ${{ github.event.inputs.environment || 'Dev' }}
 
     steps:
     - name: Checkout code
