@@ -118,14 +118,22 @@ jobs:
             done < changed_files.txt
           fi
 
-      - name: Upload full project
+      - name: Upload entire project
         run: |
-          echo "Uploading entire project..."
-          lftp -u "${{ secrets.FTP_USERNAME }},${{ secrets.FTP_PASSWORD }}" -e "
-            set ftp:ssl-allow true;
-            mirror -R ./ ${{ secrets.FTP_DEPLOY_PATH }}/;
-            bye
-          " ${{ secrets.FTP_HOST }}
+          echo "Uploading project files..."
+          lftp -u "${{ secrets.FTP_USERNAME }},${{ secrets.FTP_PASSWORD }}" ${{ secrets.FTP_HOST }} <<EOF
+          mirror -R --verbose --parallel=5 \
+            --exclude-glob=vendor.zip \
+            --exclude-glob=.git \
+            --exclude-glob=.git/** \
+            --exclude-glob=.github \
+            --exclude-glob=.github/** \
+            --exclude-glob=Karate \
+            --exclude-glob=Karate/** \
+            ./ ${{ secrets.FTP_DEPLOY_PATH }}
+          bye
+          EOF
+          echo "Upload completed!"
 
       - name: Upload vendor folder (only if needed)
         if: env.composer_changed == 'true' || env.remote_is_empty == 'true'
