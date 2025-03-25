@@ -10,6 +10,7 @@ use App\Http\Controllers\FantasyTypeController;
 use App\Http\Controllers\OralTypeController;
 use App\Http\Controllers\PaymentMethodController;
 use App\Http\Controllers\PersonController;
+use App\Http\Controllers\ProfileVisitController;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\ServicesController;
 use App\Http\Controllers\TagController;
@@ -17,6 +18,8 @@ use App\Http\Controllers\TailController;
 use App\Http\Controllers\TypeOfMassageController;
 use App\Http\Controllers\UploadController;
 use App\Http\Controllers\VirtualServicesController;
+use App\Http\Middleware\IsAdmin;
+use App\Http\Middleware\IsModel;
 use App\Http\Middleware\IsUserAuth;
 use Illuminate\Support\Facades\Route;
 
@@ -46,14 +49,23 @@ Route::middleware([IsUserAuth::class])->group(function () {
         Route::post('logout', 'logout');
     });
 
-    Route::post('create', [PersonController::class, 'CreatePerson']);
-    Route::put('update/{id}', [PersonController::class, 'UpdatePerson']);
-    Route::delete('delete/{id}', [PersonController::class, 'DeletePerson']);
-    Route::post('add-tag/{id}', [TagController::class, 'AddTag']);
-    Route::put('update-tag/{id}', [TagController::class, 'UpdateTag']);
-    Route::delete('delete-tag/{id}', [TagController::class, 'DeleteTag']);
-    Route::post('upload/image/{personId}', [UploadController::class, 'uploadImage']);
-    Route::post('upload/video/{personId}', [UploadController::class, 'uploadVideo']);
-    Route::delete('upload/image/{mediaId}', [UploadController::class, 'deleteMedia']);
-    Route::delete('upload/video/{mediaId}', [UploadController::class, 'deleteMedia']);
+    Route::middleware([IsAdmin::class])->group(function () {
+        Route::post('create', [PersonController::class, 'CreatePerson']);
+        Route::put('update/{id}', [PersonController::class, 'UpdatePerson']);
+        Route::delete('delete/{id}', [PersonController::class, 'DeletePerson']);
+        Route::post('add-tag/{id}', [TagController::class, 'AddTag']);
+        Route::put('update-tag/{id}', [TagController::class, 'UpdateTag']);
+        Route::delete('delete-tag/{id}', [TagController::class, 'DeleteTag']);
+        Route::post('upload/image/{personId}', [UploadController::class, 'uploadImage']);
+        Route::post('upload/video/{personId}', [UploadController::class, 'uploadVideo']);
+        Route::delete('upload/image/{mediaId}', [UploadController::class, 'deleteMedia']);
+        Route::delete('upload/video/{mediaId}', [UploadController::class, 'deleteMedia']);
+    });
+
+    Route::middleware([IsModel::class])->group(function () {
+        Route::post('profile/visit', [ProfileVisitController::class, 'store']);
+        Route::get('profile/visits/last-7-days', [ProfileVisitController::class, 'last7Days']);
+        Route::get('profile/visits/last-month', [ProfileVisitController::class, 'lastMonth']);
+        Route::get('profile/visits/last-3-months', [ProfileVisitController::class, 'last3Months']);
+    });
 });
