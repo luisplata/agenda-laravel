@@ -12,7 +12,8 @@ repositories {
 }
 
 dependencies {
-    testImplementation 'com.intuit.karate:karate-junit5:1.2.0.RC4'
+    testImplementation("com.intuit.karate:karate-junit5:1.4.1")
+    testImplementation 'net.masterthought:cucumber-reporting:5.8.1'
 }
 
 test {

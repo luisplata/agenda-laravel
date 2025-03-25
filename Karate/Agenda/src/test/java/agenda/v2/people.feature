@@ -11,6 +11,7 @@ Feature: People API
         Given url 'https://back.agenda.peryloth.com/api/people/' + personId.personId
         When method get
         Then status 200
+        * match personId != null
         And match response.id == personId.personId
 
     Scenario: Increment views by ID
