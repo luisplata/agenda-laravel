@@ -3,8 +3,8 @@
     Background:
         * url 'https://back.agenda.peryloth.com/api'
 
-    Scenario: Retrieve list of services
+    Scenario: Retrieve list of tail
         Given path 'tail'
         When method GET
         Then status 200
-        And match response.services contains ["Pequeña", "Normal", "Grande", "Gigante"]
+        And match response.tail contains ["Pequeña", "Normal", "Grande", "Gigante"]

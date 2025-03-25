@@ -7,7 +7,6 @@
 
     Scenario: Register a profile visit
         Given path 'profile/visit'
-        And header Authorization = 'Bearer ' + authToken
         And request { "token": "#(authToken)" }
         When method POST
         Then status 201
