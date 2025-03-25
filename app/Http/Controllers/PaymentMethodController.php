@@ -23,4 +23,3 @@ class PaymentMethodController extends Controller
         return response()->json($paymentMethods);
     }
 }
-//Route::get('payment_methods_list', [PaymentMethodController::class, 'index']);
