@@ -44,6 +44,13 @@ Route::get('additionalServices', [AdditionalController::class, 'listAdditionalSe
 
 
 Route::middleware([IsUserAuth::class])->group(function () {
+    
+    Route::post('create', [PersonController::class, 'CreatePerson']);
+    Route::put('update/{id}', [PersonController::class, 'UpdatePerson']);
+    Route::post('add-tag/{id}', [TagController::class, 'AddTag']);
+    Route::put('update-tag/{id}', [TagController::class, 'UpdateTag']);
+    Route::delete('delete-tag/{id}', [TagController::class, 'DeleteTag']);
+
     Route::controller(AuthController::class)->group(function () {
         Route::get('me', 'GetUser');
         Route::post('logout', 'logout');
@@ -63,10 +70,4 @@ Route::middleware([IsUserAuth::class])->group(function () {
         Route::get('profile/visits/last-month', [ProfileVisitController::class, 'lastMonth']);
         Route::get('profile/visits/last-3-months', [ProfileVisitController::class, 'last3Months']);
     });
-
-    Route::post('create', [PersonController::class, 'CreatePerson']);
-    Route::put('update/{id}', [PersonController::class, 'UpdatePerson']);
-    Route::post('add-tag/{id}', [TagController::class, 'AddTag']);
-    Route::put('update-tag/{id}', [TagController::class, 'UpdateTag']);
-    Route::delete('delete-tag/{id}', [TagController::class, 'DeleteTag']);
 });

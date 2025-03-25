@@ -14,7 +14,7 @@ class IsModel
         $user = auth('api')->user();
 
         if (!$user || $user->role !== 'Model') {
-            return response()->json(['message' => 'No autorizado'], 403); // Error 403 para usuario sin permisos
+            return response()->json(['message' => 'No autorizado isnt a model'], 403); // Error 403 para usuario sin permisos
         }
 
         return $next($request);
