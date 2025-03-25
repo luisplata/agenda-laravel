@@ -53,15 +53,16 @@ jobs:
           echo "Uploading project files..."
           lftp -u "${{ secrets.FTP_USERNAME }},${{ secrets.FTP_PASSWORD }}" ${{ secrets.FTP_HOST }} <<EOF
           mirror -R --verbose --parallel=5 \
-            --exclude-glob=vendor.zip \
-            --exclude-glob=.git \
-            --exclude-glob=.git/** \
-            --exclude-glob=.github \
-            --exclude-glob=.github/** \
-            --exclude-glob=Karate \
-            --exclude-glob=Karate/** \
-            ./ ${{ secrets.FTP_DEPLOY_PATH }}
+          --exclude-glob=vendor.zip \
+          --exclude-glob=.git \
+          --exclude-glob=.git/** \
+          --exclude-glob=.github \
+          --exclude-glob=.github/** \
+          --exclude-glob=Karate \
+          --exclude-glob=Karate/** \
+          --only-newer \
+          ./ ${{ secrets.FTP_DEPLOY_PATH }}
           bye
           EOF
           echo "Upload completed!"
-      
+

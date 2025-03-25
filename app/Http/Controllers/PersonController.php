@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Person;
+use App\Models\ProfileVisit;
 use App\Models\Tag;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -57,6 +58,13 @@ class PersonController extends Controller
 
         $person->load('tags');
         $person->load('media');
+
+        $user = auth('api')->user();
+        if ($user) {
+            ProfileVisit::create([
+                'profile_id' => $id, // Se usa el ID de la persona visitada
+            ]);
+        }
         return response()->json($person);
     }
 

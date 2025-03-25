@@ -6,15 +6,18 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class IsAdmin
+class IsModel
 {
 
     public function handle(Request $request, Closure $next): Response
     {
         $user = auth('api')->user();
-        if(!$user || $user->role !== 'Admin'){
-            return response()->json(['message' => "No autorizado is'nt a Admin"], 403);
+
+        if (!$user || $user->role !== 'Model') {
+            return response()->json(['message' => 'No autorizado isnt a model'], 403); // Error 403 para usuario sin permisos
         }
+
         return $next($request);
     }
+
 }
