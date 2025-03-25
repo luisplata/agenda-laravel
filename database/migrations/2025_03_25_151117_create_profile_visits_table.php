@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('profile_visits', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('profile_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('profile_id')->constrained('people')->onDelete('cascade');
             $table->timestamp('visited_at')->useCurrent();
             $table->timestamps();
         });

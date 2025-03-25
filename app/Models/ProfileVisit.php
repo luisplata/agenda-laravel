@@ -15,11 +15,11 @@ class ProfileVisit extends Model
     public $timestamps = true;
 
     /**
-     * Relación con el usuario (perfil visitado)
+     * Relación con la persona (perfil visitado)
      */
     public function profile()
     {
-        return $this->belongsTo(User::class, 'profile_id');
+        return $this->belongsTo(Person::class, 'profile_id');
     }
 
     /**
@@ -35,7 +35,7 @@ class ProfileVisit extends Model
                 DB::raw('COUNT(*) as total_visits')
             )
             ->where('visited_at', '>=', DB::raw("NOW() - INTERVAL $interval"))
-            ->groupBy(DB::raw("DATE_FORMAT(visited_at, '$dateFormat')")) // ✅ Se agrupa correctamente
+            ->groupBy(DB::raw("DATE_FORMAT(visited_at, '$dateFormat')"))
             ->orderBy('date', 'ASC');
 
         if ($profileId) {
@@ -44,6 +44,4 @@ class ProfileVisit extends Model
 
         return $query->get();
     }
-
-
 }
