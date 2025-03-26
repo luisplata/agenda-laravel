@@ -19,6 +19,7 @@ use App\Http\Controllers\TypeOfMassageController;
 use App\Http\Controllers\UploadController;
 use App\Http\Controllers\VirtualServicesController;
 use App\Http\Middleware\IsAdmin;
+use App\Http\Middleware\IsAssistant;
 use App\Http\Middleware\IsModel;
 use App\Http\Middleware\IsUserAuth;
 use Illuminate\Support\Facades\Route;
@@ -44,7 +45,7 @@ Route::get('additionalServices', [AdditionalController::class, 'listAdditionalSe
 
 
 Route::middleware([IsUserAuth::class])->group(function () {
-    
+
     Route::post('create', [PersonController::class, 'CreatePerson']);
     Route::put('update/{id}', [PersonController::class, 'UpdatePerson']);
     Route::post('add-tag/{id}', [TagController::class, 'AddTag']);
@@ -62,6 +63,8 @@ Route::middleware([IsUserAuth::class])->group(function () {
         Route::delete('upload/image/{mediaId}', [UploadController::class, 'deleteMedia']);
         Route::delete('upload/video/{mediaId}', [UploadController::class, 'deleteMedia']);
         Route::delete('delete/{id}', [PersonController::class, 'DeletePerson']);
+        Route::post('admin/register', [RegisterController::class, 'registerAssistant']);
+        Route::delete('admin/delete/{id}', [RegisterController::class, 'deleteUser']);
     });
 
     Route::middleware([IsModel::class])->group(function () {
@@ -70,4 +73,7 @@ Route::middleware([IsUserAuth::class])->group(function () {
         Route::get('profile/visits/last-month', [ProfileVisitController::class, 'lastMonth']);
         Route::get('profile/visits/last-3-months', [ProfileVisitController::class, 'last3Months']);
     });
+
+
+    //Route::middleware([IsAssistant::class])->group(function () {});
 });

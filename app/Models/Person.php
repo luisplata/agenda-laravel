@@ -34,4 +34,14 @@ class Person extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::deleting(function ($user) {
+            $user->media()->delete();
+            $user->tags()->delete();
+        });
+    }
 }
