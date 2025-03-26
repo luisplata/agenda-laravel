@@ -1,0 +1,608 @@
+auth.feature
+"""
+Feature: Auth API
+
+    Background:
+        * url 'https://back.agenda.peryloth.com/api'
+        * def loginResponse = call read('login.feature@login_success') { email: 'model@example.com', password: 'password' }
+        * def authToken = loginResponse.tokenAuth
+        * def expectedEmail = loginResponse.loggedUser
+        * print 'Token obtenido:', authToken
+
+    Scenario: Get user details
+        Given path 'me'
+        And request { "token": "#(authToken)" }
+        * header Content-Type = 'application/json'
+        When method get
+        Then status 200
+        And match response.email == expectedEmail
+
+    Scenario: Logout
+        Given path 'logout'
+        * request { "token": "#(authToken)" }
+        * header Content-Type = 'application/json'
+        When method post
+        Then status 200
+        And match response.message == 'Sesión cerrada'
+"""
+
+delete_assistant.feature
+"""
+Feature: Delete Assistant API
+
+    Background:
+        * url 'https://back.agenda.peryloth.com/api'
+        * def loginResponse = call read('login.feature@login_test')
+        * def authToken = loginResponse.tokenAuth
+        * print 'Auth Token:', authToken
+        * header Authorization = 'Bearer ' + authToken
+        * def randomEmail = 'assistant' + java.lang.System.currentTimeMillis() + '@example.com'
+        * print 'Generated Email:', randomEmail
+
+    @registerAndDeleteAssistant
+    Scenario: Register and then delete an Assistant
+        # 1️⃣ Registrar un nuevo usuario assistant
+        Given path 'admin/register'
+        And request
+        """
+        {
+            "name": "John Assistant",
+            "email": "#(randomEmail)",
+            "password": "password",
+            "password_confirmation": "password",
+            "rol": "Assistant",
+            "token": "#(authToken)"
+        }
+        """
+        When method post
+        Then status 201
+        And match response.message == 'User registered successfully'
+        * def userId = response.user.id
+        * print 'Registered User ID:', userId
+
+        # 2️⃣ Eliminar el usuario registrado
+        Given path 'admin/delete/' + userId
+        And request
+        """
+        {
+            "token": "#(authToken)"
+        }
+        """
+        When method delete
+        Then status 200
+        And match response.message == 'User and related data deleted successfully'
+"""
+
+list_additional.feature
+"""
+Feature: List additional additional_services
+
+    Background:
+        * url 'https://back.agenda.peryloth.com/api'
+
+    Scenario: Retrieve list of additional_services
+        Given path 'additionalServices'
+        When method GET
+        Then status 200
+        And match response.additional_services contains ["Eyaculación Cuerpo", "Eyaculación Pecho", "Eyaculacion Facial", "Mujeres y Hombres", "Atención a Parejas", "Trios M/H/M", "Trios H/M/H", "Lesbicos", "Poses varias", "Besos", "Bailes"]
+"""
+
+list_biotype.feature
+"""
+Feature: List biotype
+
+    Background:
+        * url 'https://back.agenda.peryloth.com/api'
+
+    Scenario: Retrieve list of biotype
+        Given path 'bioType'
+        When method GET
+        Then status 200
+        And match response.biotype contains ["Natural", "Operado/a"]
+"""
+
+list_bust.feature
+"""
+Feature: List Bust
+
+    Background:
+        * url 'https://back.agenda.peryloth.com/api'
+
+    Scenario: Retrieve list of bust
+        Given path 'bust'
+        When method GET
+        Then status 200
+        And match response.bust contains ["Pequeño", "Normal", "Grande", "Gigante"]
+"""
+
+list_categories.feature
+"""
+Feature: List Categories
+
+    Background:
+        * url 'https://back.agenda.peryloth.com/api'
+
+    Scenario: Retrieve list of categories
+        Given path 'list_categories'
+        When method GET
+        Then status 200
+        And match response.categories == ["Dama", "Virtual", "Dama Virtual", "Trans", "Trans Virtual", "Caballero de Compañía", "Caballero Virtual", "Masajista"]
+"""
+
+list_fantasy_type.feature
+"""
+Feature: List fantasy_type
+
+    Background:
+        * url 'https://back.agenda.peryloth.com/api'
+
+    Scenario: Retrieve list of fantasy_type
+        Given path 'fantasyType'
+        When method GET
+        Then status 200
+        And match response.fantasy_type contains ["Juguetes", "Disfraces", "Lencería", "Juego de Roles", "Cambio de Roles", "Adoración de Pies", "Dominación", "Sumisa", "BDSM", "Lluvia Dorada", "Fisting", "Anal", "Squirt", "Sadomasoquismo", "A consultar"]
+"""
+
+list_oral_type.feature
+"""
+Feature: List oral type
+
+    Background:
+        * url 'https://back.agenda.peryloth.com/api'
+
+    Scenario: Retrieve list of oral type
+        Given path 'oralType'
+        When method GET
+        Then status 200
+        And match response.oral_type contains ["Al Natural", "Con Protección", "Garganta profunda", "69"]
+"""
+
+list_payment_methods.feature
+"""
+Feature: List Payment Methods
+
+    Background:
+        * url 'https://back.agenda.peryloth.com/api'
+
+    Scenario: Retrieve list of payment methods
+        Given path 'payment_methods_list'
+        When method GET
+        Then status 200
+        And match response[0].name == "paypal"
+        And match response[0].icon == "paypal"
+        And match response[1].name == "binance"
+        And match response[1].icon == "binance_icon"
+        And match response[2].name == "other_bank"
+        And match response[2].icon == "more_icons_to_bank"
+"""
+
+list_services.feature
+"""
+Feature: List services
+
+    Background:
+        * url 'https://back.agenda.peryloth.com/api'
+
+    Scenario: Retrieve list of services
+        Given path 'services'
+        When method GET
+        Then status 200
+        And match response.services contains ["Presencial", "A Domicilio", "Virtual", "Masajista", "Streaptease"]
+"""
+
+list_tail.feature
+"""
+Feature: List Tails
+
+    Background:
+        * url 'https://back.agenda.peryloth.com/api'
+
+    Scenario: Retrieve list of tail
+        Given path 'tail'
+        When method GET
+        Then status 200
+        And match response.tail contains ["Pequeña", "Normal", "Grande", "Gigante"]
+"""
+
+list_type_of_body.feature
+"""
+Feature: Type of Body Services
+
+    Background:
+        * url 'https://back.agenda.peryloth.com/api'
+
+    Scenario: Retrieve list of typeOfBody
+        Given path 'typeOfBody'
+        When method GET
+        Then status 200
+        And match response.typeOfBody contains ["Delgado/a", "Robusto/a", "Voluptuoso/a", "Curvy", "BBW"]
+"""
+
+list_type_of_massages.feature
+"""
+Feature: List type_of_massage
+
+    Background:
+        * url 'https://back.agenda.peryloth.com/api'
+
+    Scenario: Retrieve list of type_of_massage
+        Given path 'typeOfMassage'
+        When method GET
+        Then status 200
+        And match response.type_of_massage contains ["Convencional", "Erotico", "Relajante", "Sensitivo", "Tántrico", "Estimulante", "Prostático", "Antiestres"]
+"""
+
+list_virtual_services.feature
+"""
+Feature: List virtualServices
+
+    Background:
+        * url 'https://back.agenda.peryloth.com/api'
+
+    Scenario: Retrieve list of virtualServices
+        Given path 'virtualServices'
+        When method GET
+        Then status 200
+        And match response.virtual_services contains ["Creadora de contenido", "Videollamadas", "Novia virtual", "Videos personalizados", "Pack de Fotos", "Pack de Videos pregrabados", "Foto Zing", "Gif Zing", "Dickrate", "Sexting", "Chat Hot", "Canal VIP Telegram", "Venta de ropa", "Servicios personalizados", "Otros, a consultar"]
+"""
+
+login.feature
+"""
+Feature: Login API
+
+    Scenario: Unsuccessful login
+        Given url 'https://back.agenda.peryloth.com/api/login'
+        And request { "email": "test@example.com", "password": "wrongpassword" }
+        When method post
+        Then status 401
+        And match response.message == 'Credenciales incorrectas'
+
+    @login_success
+    Scenario Outline: Successful login with dynamic user
+        Given url 'https://back.agenda.peryloth.com/api/login'
+        And request { "email": "<email>", "password": "<password>" }
+        When method post
+        Then status 200
+        * print 'Login Response:', response
+        And match response.token != null
+        * def tokenAuth = response.token
+        * def loggedUser = "<email>"
+
+        Examples:
+            | email              | password  |
+            | test@example.com   | password  |
+            | model@example.com  | password  |
+
+
+    @login_test
+    Scenario: Login with test user
+        Given url 'https://back.agenda.peryloth.com/api/login'
+        And request { "email": "test@example.com", "password": "password" }
+        When method post
+        Then status 200
+        * print 'Login Response:', response
+        And match response.token != null
+        * def tokenAuth = response.token
+        * def loggedUser = "test@example.com"
+
+    @login_model
+    Scenario: Login with model user
+        Given url 'https://back.agenda.peryloth.com/api/login'
+        And request { "email": "model@example.com", "password": "password" }
+        When method post
+        Then status 200
+        * print 'Login Response:', response
+        And match response.token != null
+        * def tokenAuth = response.token
+        * def loggedUser = "model@example.com"
+"""
+
+people.feature
+"""
+Feature: People API
+
+    Scenario: Get all people
+        * call read('register_user.feature@register_success')
+        Given url 'https://back.agenda.peryloth.com/api/people'
+        When method get
+        Then status 200
+        And match response != null
+
+    Scenario: Get a person by ID
+        * def personId = call read('person.feature@createPerson')
+        Given url 'https://back.agenda.peryloth.com/api/people/' + personId.personId
+        When method get
+        Then status 200
+        * match personId != null
+        And match response.id == personId.personId
+
+    Scenario: Increment views by ID
+        * def personId = call read('person.feature@createPerson')
+        Given url 'https://back.agenda.peryloth.com/api/increment/' + personId.personId
+        When method get
+        Then status 200
+        And match response contains { views: '#notnull' }
+"""
+
+person.feature
+"""
+Feature: Person API
+
+    Background:
+        * url 'https://back.agenda.peryloth.com/api'
+        * def loginResponse = call read('login.feature@login_test')
+        * print 'Login Response:', loginResponse
+        * def authToken = loginResponse.tokenAuth
+        * def loggedUser = loginResponse.loggedUser
+        * print 'Auth Token:', authToken
+        * print 'Logged User:', loggedUser
+        * match loggedUser == 'test@example.com'
+
+
+    @createPerson
+    Scenario: Create a person
+        Given path 'create'
+        And request { "token": "#(authToken)", "nombre": "John Doe", "about": "About John", "horario": "9-5", "tarifa": "100", "whatsapp": "1234567890", "telegram": "johndoe", "mapa": "location" }
+        When method post
+        Then status 201
+        And match response.nombre == 'John Doe'
+        * print 'Response from createPerson:', response
+        * def personId = response.id
+
+    @createPersonModel
+    Scenario: Create a person Model
+        Given path 'create'
+        * def loginResponse = call read('login.feature@login_model')
+        * def authToken = loginResponse.tokenAuth
+        * def loggedUser = loginResponse.loggedUser
+        And request { "token": "#(authToken)", "nombre": "John Doe", "about": "About John", "horario": "9-5", "tarifa": "100", "whatsapp": "1234567890", "telegram": "johndoe", "mapa": "location" }
+        When method post
+        Then status 201
+        And match response.nombre == 'John Doe'
+        * print 'Response from createPerson:', response
+        * def personId = response.id
+
+
+
+    Scenario: Update a person
+        * def personId = call read('person.feature@createPerson')
+        Given path 'update/'+ personId.personId
+        And request { "token": "#(authToken)", "nombre": "John Doe Updated", "about": "About John Updated", "horario": "10-6", "tarifa": "150", "whatsapp": "0987654321", "telegram": "johnupdated", "mapa": "new location" }
+        When method put
+        Then status 200
+        And match response.nombre == 'John Doe Updated'
+
+    Scenario: Delete a person
+        * def personId = call read('person.feature@createPerson')
+        * match loggedUser == 'test@example.com'
+        * print 'Using Auth Token:', authToken
+        Given path 'delete/' + personId.personId
+        And request { "token": "#(authToken)" }
+        When method delete
+        Then status 200
+        And match response.message == 'Persona eliminada'
+
+
+"""
+
+profile_visit.feature
+"""
+Feature: Profile Visit
+
+    Background:
+        * url 'https://back.agenda.peryloth.com/api'
+        * def loginResponse = call read('login.feature@login_success') { email: 'model@example.com', password: 'password' }
+        * def authToken = loginResponse.tokenAuth
+
+    Scenario: Register a profile visit
+        * call read('person.feature@createPersonModel')
+        Given path 'profile/visit'
+        And request { "token": "#(authToken)" }
+        When method POST
+        Then status 201
+        And match response.message == "Visita registrada con éxito"
+"""
+
+register_assistant.feature
+"""
+Feature: Register Assistant API
+
+    Background:
+        * url 'https://back.agenda.peryloth.com/api'
+        * def loginResponse = call read('login.feature@login_test')
+        * def authToken = loginResponse.tokenAuth
+        * print 'Auth Token:', authToken
+        * def randomEmail = 'assistant' + java.lang.System.currentTimeMillis() + '@example.com'
+
+    @registerAssistant
+    Scenario: Register an Assistant successfully
+        Given path 'admin/register'
+        And request
+        """
+        {
+            "name": "John Assistant",
+            "email": "#(randomEmail)",
+            "password": "password",
+            "password_confirmation": "password",
+            "rol": "Assistant",
+            "token": "#(authToken)"
+        }
+        """
+        When method post
+        Then status 201
+        And match response.message == 'User registered successfully'
+        And match response.user.email == randomEmail
+        And match response.user.role == 'Assistant'
+
+    @registerAssistant_duplicateEmail
+    Scenario: Fail to register with duplicate email
+        Given path 'admin/register'
+        And request
+        """
+        {
+            "name": "John Assistant",
+            "email": "test@example.com",
+            "password": "password",
+            "password_confirmation": "password",
+            "rol": "Assistant",
+            "token": "#(authToken)"
+        }
+        """
+        When method post
+        Then status 422
+        And match response.errors.email[0] contains 'The email has already been taken'
+
+    @registerAssistant_missingFields
+    Scenario: Fail to register with missing fields
+        Given path 'admin/register'
+        And request
+        """
+        {
+            "name": "John Assistant",
+            "password": "password",
+            "password_confirmation": "password",
+            "token": "#(authToken)"
+        }
+        """
+        When method post
+        Then status 422
+        And match response.errors.email[0] contains 'The email field is required'
+        And match response.errors.rol[0] contains 'The rol field is required'
+"""
+
+register_user.feature
+"""
+Feature: User Registration
+
+    Background:
+        * url 'https://back.agenda.peryloth.com/api'
+        * def loginResponse = call read('login.feature@login_test')
+        * def authToken = loginResponse.tokenAuth
+
+    @register_success
+    Scenario: Successful user registration
+        * def loginResponse = call read('login.feature@login_success') { email: 'model@example.com', password: 'password' }
+        * def randomEmail = 'user_' + java.lang.System.currentTimeMillis() + '@example.com'
+        Given path 'register'
+        And request { "name": "John Doe", "email": "#(randomEmail)", "password": "secret123", "password_confirmation": "secret123", "token": "#(authToken)" }
+        When method POST
+        Then status 201
+        And match response.message == "User registered successfully"
+        And match response.user.name == "John Doe"
+        And match response.user.email == "#(randomEmail)"
+        And match response.user.role == "Model"
+
+    Scenario: Registration fails due to missing fields
+        Given path 'register'
+        And request { "name": "", "email": "", "password": "", "password_confirmation": "", "token": "#(authToken)"  }
+        When method POST
+        Then status 422
+        And match response.errors.name[0] contains "required"
+        And match response.errors.email[0] contains "required"
+        And match response.errors.password[0] contains "required"
+
+    Scenario: Registration fails due to email already taken
+        Given path 'register'
+        * def loginResponse = call read('register_user.feature@register_success')
+        And request { "name": "Jane Doe", "email": "#(loginResponse.randomEmail)", "password": "secret123", "password_confirmation": "secret123", "token": "#(authToken)"  }
+        When method POST
+        Then status 422
+        And match response.errors.email[0] contains "already been taken"
+
+    Scenario: Registration fails due to password confirmation mismatch
+        Given path 'register'
+        And request { "name": "John Doe", "email": "john@example.com", "password": "secret123", "password_confirmation": "wrongpassword", "token": "#(authToken)"  }
+        When method POST
+        Then status 422
+        And match response.errors.password[0] contains "confirmation"
+"""
+
+tag.feature
+"""
+Feature: Tag API
+
+    Background:
+        * url 'https://back.agenda.peryloth.com/api'
+        * def token = call read('login.feature@login_success') { email: 'test@example.com', password: 'password' }
+
+    @AddTag
+    Scenario: Add a tag
+        * def personId = call read('person.feature@createPerson')
+        Given path 'add-tag/' + personId.personId
+        And request { "token": #(token.tokenAuth), "valor": "Tag1", "tipo": "Type1" }
+        When method post
+        Then status 200
+        And match response[0].valor == 'Tag1'
+        * def tagId = response[0].id
+
+    Scenario: Update a tag
+        * def tagId = call read('tag.feature@AddTag')
+        Given path 'update-tag/' + tagId.tagId
+        And request { "token": #(token.tokenAuth), "valor": "Tag1 Updated", "tipo": "Type1" }
+        When method put
+        Then status 200
+        And match response.valor == 'Tag1 Updated'
+
+    Scenario: Delete a tag
+        * def tagId = call read('tag.feature@AddTag')
+        Given path 'delete-tag/' + tagId.tagId
+        And request { "token": #(token.tokenAuth) }
+        When method delete
+        Then status 200
+        And match response.message == 'Tag eliminada'
+"""
+
+upload.feature
+"""
+Feature: Upload API
+
+    Background:
+        * url 'https://back.agenda.peryloth.com/api'
+        * def loginResponse = call read('login.feature@login_test')
+        * print 'Login Response:', loginResponse
+        * def authToken = loginResponse.tokenAuth
+        * def loggedUser = loginResponse.loggedUser
+        * print 'Auth Token:', authToken
+        * print 'Logged User:', loggedUser
+        * match loggedUser == 'test@example.com'
+
+    @UploadImage
+    Scenario: Upload an image
+        * def personId = call read('person.feature@createPerson')
+        Given path 'upload/image/' + personId.personId
+        And multipart file file = { read: 'classpath:sampleImage.jpg', filename: 'sampleImage.jpg', contentType: 'image/jpeg' }
+        And multipart field token = authToken
+        When method post
+        Then status 201
+        And match response.message == 'Imagen subida exitosamente'
+        * def imagenId = response.media.id
+
+    @UploadVideo
+    Scenario: Upload a video
+        * def personId = call read('person.feature@createPerson')
+        Given path 'upload/video/' + personId.personId
+        And multipart file file = { read: 'classpath:sampleVideo.mp4', filename: 'sampleVideo.mp4', contentType: 'video/mp4' }
+        And multipart field token = authToken
+        When method post
+        Then status 201
+        And match response.message == 'Video subido exitosamente'
+        * def videoId = response.media.id
+
+    Scenario: Delete media
+        * def imagenId = call read('upload.feature@UploadImage')
+        Given path 'upload/image/' + imagenId.imagenId
+        And request { "token": "#(authToken)" }
+        When method delete
+        Then status 200
+        And match response.message == 'Media eliminada exitosamente'
+
+
+    Scenario: Delete media
+        * def videoId = call read('upload.feature@UploadVideo')
+        Given path 'upload/video/' + videoId.videoId
+        And request { "token": "#(authToken)" }
+        When method delete
+        Then status 200
+        And match response.message == 'Media eliminada exitosamente'
+"""
+

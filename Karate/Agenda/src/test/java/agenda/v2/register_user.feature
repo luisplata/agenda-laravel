@@ -2,13 +2,15 @@
 
     Background:
         * url 'https://back.agenda.peryloth.com/api'
+        * def loginResponse = call read('login.feature@login_test')
+        * def authToken = loginResponse.tokenAuth
 
     @register_success
     Scenario: Successful user registration
         * def loginResponse = call read('login.feature@login_success') { email: 'model@example.com', password: 'password' }
         * def randomEmail = 'user_' + java.lang.System.currentTimeMillis() + '@example.com'
         Given path 'register'
-        And request { "name": "John Doe", "email": "#(randomEmail)", "password": "secret123", "password_confirmation": "secret123" }
+        And request { "name": "John Doe", "email": "#(randomEmail)", "password": "secret123", "password_confirmation": "secret123", "token": "#(authToken)" }
         When method POST
         Then status 201
         And match response.message == "User registered successfully"
@@ -18,7 +20,7 @@
 
     Scenario: Registration fails due to missing fields
         Given path 'register'
-        And request { "name": "", "email": "", "password": "", "password_confirmation": "" }
+        And request { "name": "", "email": "", "password": "", "password_confirmation": "", "token": "#(authToken)"  }
         When method POST
         Then status 422
         And match response.errors.name[0] contains "required"
@@ -28,14 +30,14 @@
     Scenario: Registration fails due to email already taken
         Given path 'register'
         * def loginResponse = call read('register_user.feature@register_success')
-        And request { "name": "Jane Doe", "email": "#(loginResponse.randomEmail)", "password": "secret123", "password_confirmation": "secret123" }
+        And request { "name": "Jane Doe", "email": "#(loginResponse.randomEmail)", "password": "secret123", "password_confirmation": "secret123", "token": "#(authToken)"  }
         When method POST
         Then status 422
         And match response.errors.email[0] contains "already been taken"
 
     Scenario: Registration fails due to password confirmation mismatch
         Given path 'register'
-        And request { "name": "John Doe", "email": "john@example.com", "password": "secret123", "password_confirmation": "wrongpassword" }
+        And request { "name": "John Doe", "email": "john@example.com", "password": "secret123", "password_confirmation": "wrongpassword", "token": "#(authToken)"  }
         When method POST
         Then status 422
         And match response.errors.password[0] contains "confirmation"
