@@ -1,6 +1,7 @@
 Feature: People API
 
     Scenario: Get all people
+        * call read('register_user.feature@register_success')
         Given url 'https://back.agenda.peryloth.com/api/people'
         When method get
         Then status 200

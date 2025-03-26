@@ -27,7 +27,8 @@
 
     Scenario: Registration fails due to email already taken
         Given path 'register'
-        And request { "name": "Jane Doe", "email": "existing@example.com", "password": "secret123", "password_confirmation": "secret123" }
+        * def loginResponse = call read('register_user.feature@register_success')
+        And request { "name": "Jane Doe", "email": "#(loginResponse.randomEmail)", "password": "secret123", "password_confirmation": "secret123" }
         When method POST
         Then status 422
         And match response.errors.email[0] contains "already been taken"
