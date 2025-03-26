@@ -42,13 +42,15 @@ class PersonController extends Controller
 
     public function GetPeople()
     {
-        $people = Person::all();
-        if ($people->isEmpty()) {
+        $visiblePeople = Person::whereHas('user.subscription', function ($query) {
+            $query->where('status', 1)->where('expires_at', '>', now());
+        })->get();
+        if ($visiblePeople->isEmpty()) {
             return response()->json();
         }
-        $people->load('tags');
-        $people->load('media');
-        return response()->json($people);
+        $visiblePeople->load('tags');
+        $visiblePeople->load('media');
+        return response()->json($visiblePeople);
     }
 
     public function GetPerson($id)

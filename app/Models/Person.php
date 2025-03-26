@@ -18,6 +18,11 @@ class Person extends Model
         'telegram',
         'mapa',
         'user_id',
+        'is_visible',
+    ];
+
+    protected $casts = [
+        'is_visible' => 'boolean',
     ];
 
     public function tags()
@@ -44,4 +49,10 @@ class Person extends Model
             $user->tags()->delete();
         });
     }
+
+    public function isVisible()
+    {
+        return $this->user->subscription && $this->user->subscription->isActive();
+    }
+
 }
