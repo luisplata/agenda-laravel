@@ -21,6 +21,20 @@ Feature: Person API
         * print 'Response from createPerson:', response
         * def personId = response.id
 
+    @createPersonModel
+    Scenario: Create a person Model
+        Given path 'create'
+        * def loginResponse = call read('login.feature@login_model')
+        * def authToken = loginResponse.tokenAuth
+        * def loggedUser = loginResponse.loggedUser
+        And request { "token": "#(authToken)", "nombre": "John Doe", "about": "About John", "horario": "9-5", "tarifa": "100", "whatsapp": "1234567890", "telegram": "johndoe", "mapa": "location" }
+        When method post
+        Then status 201
+        And match response.nombre == 'John Doe'
+        * print 'Response from createPerson:', response
+        * def personId = response.id
+
+
 
     Scenario: Update a person
         * def personId = call read('person.feature@createPerson')

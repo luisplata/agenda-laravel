@@ -26,6 +26,7 @@ class PersonController extends Controller
         if ($validatedData->fails()) {
             return response()->json($validatedData->errors(), 422);
         }
+        $user = auth('api')->user();
         $person = Person::create([
             'nombre' => $request->nombre,
             'about' => $request->about,
@@ -34,6 +35,7 @@ class PersonController extends Controller
             'whatsapp' => $request->whatsapp,
             'telegram' => $request->telegram,
             'mapa' => $request->mapa,
+            'user_id' => $user->id
         ]);
         return response()->json($person, 201);
     }
@@ -42,7 +44,7 @@ class PersonController extends Controller
     {
         $people = Person::all();
         if ($people->isEmpty()) {
-            return response()->json(['message' => 'No hay personas registradas'], 404);
+            return response()->json();
         }
         $people->load('tags');
         $people->load('media');
@@ -59,12 +61,10 @@ class PersonController extends Controller
         $person->load('tags');
         $person->load('media');
 
-        $user = auth('api')->user();
-        if ($user) {
-            ProfileVisit::create([
-                'profile_id' => $id, // Se usa el ID de la persona visitada
-            ]);
-        }
+        ProfileVisit::create([
+            'profile_id' => $person->id,
+        ]);
+
         return response()->json($person);
     }
 

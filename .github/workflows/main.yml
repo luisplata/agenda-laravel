@@ -39,8 +39,8 @@ jobs:
               echo "🚀 Pulling latest changes..."
               git pull origin main &&
               echo "📦 Installing dependencies..."
-              composer install --no-dev --optimize-autoloader &&
-              composer update --no-dev &&
+              composer install--optimize-autoloader &&
+              composer update &&
               echo "🔄 Running migrations..."
               php artisan migrate --force &&
               echo "🧹 Clearing and caching Laravel config..."

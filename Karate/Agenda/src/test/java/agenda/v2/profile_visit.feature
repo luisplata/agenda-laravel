@@ -6,6 +6,7 @@
         * def authToken = loginResponse.tokenAuth
 
     Scenario: Register a profile visit
+        * call read('person.feature@createPersonModel')
         Given path 'profile/visit'
         And request { "token": "#(authToken)" }
         When method POST

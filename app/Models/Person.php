@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Person extends Model
 {
     use HasFactory;
+
     protected $fillable = [
         'nombre',
         'about',
@@ -16,6 +17,7 @@ class Person extends Model
         'whatsapp',
         'telegram',
         'mapa',
+        'user_id',
     ];
 
     public function tags()
@@ -26,5 +28,10 @@ class Person extends Model
     public function media()
     {
         return $this->hasMany(Media::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }

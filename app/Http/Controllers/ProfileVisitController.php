@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Person;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Models\ProfileVisit;
@@ -13,16 +14,15 @@ class ProfileVisitController extends Controller
      */
     public function store(Request $request)
     {
-        // Verificar si el perfil realmente existe en la base de datos
         $user = auth('api')->user();
-        $profile = User::find($user->id);
+        $person = Person::where('user_id', $user->id)->first();
 
-        if (!$profile) {
-            return response()->json(['message' => 'El perfil no existe'], 404);
+        if (!$person) {
+            return response()->json(['message' => 'No tienes un perfil válido para registrar visitas'], 403);
         }
 
         ProfileVisit::create([
-            'profile_id' => $profile->id,
+            'profile_id' => $person->id,
         ]);
 
         return response()->json(['message' => 'Visita registrada con éxito'], 201);
