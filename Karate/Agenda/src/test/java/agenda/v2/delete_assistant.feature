@@ -2,7 +2,7 @@
 
     Background:
         * url 'https://back.agenda.peryloth.com/api'
-        * def loginResponse = call read('login.feature@login_admin')
+        * def loginResponse = call read('login.feature@login_test')
         * def authToken = loginResponse.tokenAuth
         * print 'Auth Token:', authToken
         * header Authorization = 'Bearer ' + authToken
@@ -20,7 +20,8 @@
             "email": "#(randomEmail)",
             "password": "password",
             "password_confirmation": "password",
-            "rol": "Assistant"
+            "rol": "Assistant",
+            "token": "#(authToken)"
         }
         """
         When method post
@@ -31,6 +32,12 @@
 
         # 2️⃣ Eliminar el usuario registrado
         Given path 'admin/delete/' + userId
+        And request
+        """
+        {
+            "token": "#(authToken)"
+        }
+        """
         When method delete
         Then status 200
         And match response.message == 'User and related data deleted successfully'
