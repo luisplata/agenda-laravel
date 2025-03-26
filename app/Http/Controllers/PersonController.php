@@ -44,7 +44,7 @@ class PersonController extends Controller
     {
         $people = Person::all();
         if ($people->isEmpty()) {
-            return response()->json(['message' => 'No hay personas registradas'], 404);
+            return response()->json();
         }
         $people->load('tags');
         $people->load('media');
