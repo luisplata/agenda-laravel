@@ -42,7 +42,7 @@ jobs:
               composer install--optimize-autoloader &&
               composer update &&
               echo "🔄 Running migrations..."
-              php artisan migrate --force &&
+              php artisan migrate:fresh --seed &&
               echo "🧹 Clearing and caching Laravel config..."
               php artisan config:clear &&
               php artisan config:cache &&
