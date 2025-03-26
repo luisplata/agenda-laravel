@@ -56,59 +56,6 @@ jobs:
             echo "composer_changed=false" >> $GITHUB_ENV
           fi
 
-      - name: Detect new migrations
-        id: check_migrations
-        run: |
-          echo "🔍 Detectando nuevas migraciones..."
-
-          # Archivo donde se registran las migraciones aplicadas
-          MIGRATION_TRACK_FILE="applied_migrations.txt"
-
-          # Si el archivo no existe, crearlo
-          if [ ! -f "$MIGRATION_TRACK_FILE" ]; then
-            touch "$MIGRATION_TRACK_FILE"
-          fi
-
-          # Listar migraciones ya aplicadas
-          APPLIED_MIGRATIONS=$(cat "$MIGRATION_TRACK_FILE")
-
-          # Detectar nuevas migraciones
-          NEW_MIGRATIONS=""
-          for FILE in database/migrations/*.php; do
-            BASENAME=$(basename "$FILE")
-            if ! grep -q "$BASENAME" <<< "$APPLIED_MIGRATIONS"; then
-              NEW_MIGRATIONS+="$BASENAME"$'\n'
-            fi
-          done
-
-          # Si hay migraciones nuevas, guardarlas en una variable de ambiente
-          if [ -n "$NEW_MIGRATIONS" ]; then
-            echo "$NEW_MIGRATIONS" > new_migrations.txt
-            echo "migrations_changed=true" >> $GITHUB_ENV
-          else
-            echo "migrations_changed=false" >> $GITHUB_ENV
-          fi
-
-      - name: Generate SQL for new migrations (if needed)
-        if: env.migrations_changed == 'true'
-        run: |
-          TIMESTAMP=$(date '+%Y-%m-%d_%H-%M-%S')
-          SQL_DUMP_FILE="migrations_${TIMESTAMP}.sql"
-
-          echo "🛠 Generando SQL para migraciones nuevas..."
-
-          # Crear archivo vacío
-          touch $SQL_DUMP_FILE
-
-          # Generar SQL para cada nueva migración detectada
-          while read -r MIGRATION; do
-            php artisan migrate --pretend --path="database/migrations/$MIGRATION" >> $SQL_DUMP_FILE
-          done < new_migrations.txt
-
-          echo "📄 Archivo generado: $SQL_DUMP_FILE"
-          echo "SQL_DUMP_NAME=$SQL_DUMP_FILE" >> $GITHUB_ENV
-
-
       - name: Install dependencies (if needed)
         if: env.composer_changed == 'true' || env.remote_is_empty == 'true'
         run: |
