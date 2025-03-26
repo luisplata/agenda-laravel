@@ -57,4 +57,19 @@ class User extends Authenticatable implements JWTSubject
     {
         return [];
     }
+
+    public function person()
+    {
+        return $this->hasOne(Person::class, 'user_id');
+    }
+
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::deleting(function ($user) {
+            $user->person()->delete();
+        });
+    }
 }
