@@ -2,10 +2,9 @@
 
     Background:
         * url 'https://back.agenda.peryloth.com/api'
-        * def loginResponse = call read('login.feature@login_admin')
+        * def loginResponse = call read('login.feature@login_test')
         * def authToken = loginResponse.tokenAuth
         * print 'Auth Token:', authToken
-        * header Authorization = 'Bearer ' + authToken
         * def randomEmail = 'assistant' + java.lang.System.currentTimeMillis() + '@example.com'
 
     @registerAssistant
@@ -18,7 +17,8 @@
             "email": "#(randomEmail)",
             "password": "password",
             "password_confirmation": "password",
-            "rol": "Assistant"
+            "rol": "Assistant",
+            "token": "#(authToken)"
         }
         """
         When method post
@@ -37,7 +37,8 @@
             "email": "test@example.com",
             "password": "password",
             "password_confirmation": "password",
-            "rol": "Assistant"
+            "rol": "Assistant",
+            "token": "#(authToken)"
         }
         """
         When method post
@@ -52,7 +53,8 @@
         {
             "name": "John Assistant",
             "password": "password",
-            "password_confirmation": "password"
+            "password_confirmation": "password",
+            "token": "#(authToken)"
         }
         """
         When method post
