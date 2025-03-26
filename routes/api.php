@@ -13,6 +13,7 @@ use App\Http\Controllers\PersonController;
 use App\Http\Controllers\ProfileVisitController;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\ServicesController;
+use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\TailController;
 use App\Http\Controllers\TypeOfMassageController;
@@ -58,13 +59,15 @@ Route::middleware([IsUserAuth::class])->group(function () {
     });
 
     Route::middleware([IsAdmin::class])->group(function () {
-        Route::post('upload/image/{personId}', [UploadController::class, 'uploadImage']);
-        Route::post('upload/video/{personId}', [UploadController::class, 'uploadVideo']);
-        Route::delete('upload/image/{mediaId}', [UploadController::class, 'deleteMedia']);
-        Route::delete('upload/video/{mediaId}', [UploadController::class, 'deleteMedia']);
-        Route::delete('delete/{id}', [PersonController::class, 'DeletePerson']);
-        Route::post('admin/register', [RegisterController::class, 'registerAssistant']);
-        Route::delete('admin/delete/{id}', [RegisterController::class, 'deleteUser']);
+        Route::post(    'upload/image/{personId}',  [UploadController::class,           'uploadImage']);
+        Route::post(    'upload/video/{personId}',  [UploadController::class,           'uploadVideo']);
+        Route::delete(  'upload/image/{mediaId}',   [UploadController::class,           'deleteMedia']);
+        Route::delete(  'upload/video/{mediaId}',   [UploadController::class,           'deleteMedia']);
+        Route::delete(  'delete/{id}',              [PersonController::class,           'DeletePerson']);
+        Route::post(    'admin/register',           [RegisterController::class,         'registerAssistant']);
+        Route::delete(  'admin/delete/{id}',        [RegisterController::class,         'deleteUser']);
+        Route::post(    'subscriptions/{userId}',   [SubscriptionController::class,     'store']);
+        Route::get(     'subscriptions/check',      [SubscriptionController::class,     'checkSubscriptions']);
     });
 
     Route::middleware([IsModel::class])->group(function () {
