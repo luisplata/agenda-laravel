@@ -3,7 +3,9 @@
     Background:
         * url 'https://back.agenda.peryloth.com/api'
 
+    @register_success
     Scenario: Successful user registration
+        * def loginResponse = call read('login.feature@login_success') { email: 'model@example.com', password: 'password' }
         * def randomEmail = 'user_' + java.lang.System.currentTimeMillis() + '@example.com'
         Given path 'register'
         And request { "name": "John Doe", "email": "#(randomEmail)", "password": "secret123", "password_confirmation": "secret123" }
