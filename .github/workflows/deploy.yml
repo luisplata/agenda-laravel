@@ -100,11 +100,11 @@ jobs:
             done < changed_files.txt
           fi
 
-      - name: Upload entire project
+      - name: Upload entire project with cleanup
         run: |
-          echo "Uploading project files..."
-          lftp -u "${{ secrets.FTP_USERNAME }},${{ secrets.FTP_PASSWORD }}" ${{ secrets.FTP_HOST }} <<EOF
-          mirror -R --verbose --parallel=5 \
+            echo "Uploading project files with cleanup..."
+            lftp -u "${{ secrets.FTP_USERNAME }},${{ secrets.FTP_PASSWORD }}" ${{ secrets.FTP_HOST }} <<EOF
+            mirror -R --verbose --parallel=5 --delete \
             --exclude-glob=vendor.zip \
             --exclude-glob=.git \
             --exclude-glob=.git/** \
@@ -113,9 +113,10 @@ jobs:
             --exclude-glob=Karate \
             --exclude-glob=Karate/** \
             ./ ${{ secrets.FTP_DEPLOY_PATH }}
-          bye
-          EOF
-          echo "Upload completed!"
+            bye
+            EOF
+            echo "Upload completed!"
+  
 
       - name: Upload vendor folder (only if needed)
         if: env.composer_changed == 'true' || env.remote_is_empty == 'true'

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PersonController;
+use App\Http\Controllers\TagBatchController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\UploadController;
 use App\Http\Middleware\IsUserAuth;
@@ -30,4 +31,10 @@ Route::middleware([IsUserAuth::class])->group(function () {
     Route::post('upload/video/{personId}', [UploadController::class, 'uploadVideo']);
     Route::delete('upload/image/{mediaId}', [UploadController::class, 'deleteMedia']);
     Route::delete('upload/video/{mediaId}', [UploadController::class, 'deleteMedia']);
+
+    Route::prefix('tags')->group(function () {
+        Route::post('/add/{personId}', [TagBatchController::class, 'AddTags']);
+        Route::put('/update', [TagBatchController::class, 'UpdateTags']);
+        Route::delete('/delete', [TagBatchController::class, 'DeleteTags']);
+    });
 });
