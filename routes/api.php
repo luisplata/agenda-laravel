@@ -75,6 +75,7 @@ Route::middleware([IsUserAuth::class])->group(function () {
         Route::delete(  'admin/delete/{id}',        [RegisterController::class,         'deleteUser']);
         Route::post(    'subscriptions/{userId}',   [SubscriptionController::class,     'store']);
         Route::get(     'subscriptions/check',      [SubscriptionController::class,     'checkSubscriptions']);
+        Route::get(     'all_people',                   [PersonController::class,           'GetAllPeople']);
     });
 
     Route::middleware([IsModel::class])->group(function () {
