@@ -53,6 +53,17 @@ class PersonController extends Controller
         return response()->json($visiblePeople);
     }
 
+    public function GetAllPeople()
+    {
+        $visiblePeople = Person::all();
+        if ($visiblePeople->isEmpty()) {
+            return response()->json();
+        }
+        $visiblePeople->load('tags');
+        $visiblePeople->load('media');
+        return response()->json($visiblePeople);
+    }
+
     public function GetPerson($id)
     {
         $person = Person::find($id);
