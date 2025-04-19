@@ -29,11 +29,11 @@ Feature: List all people as Admin
         * def createdPersonId = response.id
         * print 'Persona creada:', createdPersonId
 
-        * def loginAdmin = call read('login.feature@login_success') { email: 'test@example.com', password: 'password' }
+        * def loginAdmin = call read('login.feature@login_test')
         * def tokenAdmin = loginAdmin.tokenAuth
-        * header Authorization = 'Bearer ' + tokenAdmin
 
         Given path 'all_people'
+        And request { "token": "#(tokenAdmin)" }
         When method get
         Then status 200
         And match response[*].nombre contains randomName
