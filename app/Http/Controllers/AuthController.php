@@ -70,6 +70,7 @@ class AuthController extends Controller
         }
 
         $person['email'] = $user->email;
+        $person['role'] = $user->role;
 
         $person->load('tags');
 
