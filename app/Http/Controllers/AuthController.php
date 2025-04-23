@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Person;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -52,7 +53,7 @@ class AuthController extends Controller
             $user = User::where('email', $request->email)->first();
             $user->token = $token;
             $user->save();
-            return response()->json(['token' => $token]);
+            return response()->json(['token' => $token, "profile" => $user->role]);
         } catch (JWTException $e) {
             return response()->json(['message' => 'No se pudo crear el token'], 500);
         }
@@ -62,8 +63,16 @@ class AuthController extends Controller
     {
         $user = Auth::user();
 
-        // Filtrar solo los campos necesarios
-        $userData = $user->only(['id', 'name', 'email']);
+        $userData = $user->only(['id', 'name', 'email', 'role']);
+
+        $person = Person::where('user_id', $user->id)->first();
+
+        if ($person != null) {
+
+            $person->load('tags');
+
+            $userData['Persona'] = $person;
+        }
 
         return response()->json($userData);
     }

@@ -14,6 +14,7 @@ use App\Http\Controllers\ProfileVisitController;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\ServicesController;
 use App\Http\Controllers\SubscriptionController;
+use App\Http\Controllers\TagBatchController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\TailController;
 use App\Http\Controllers\TypeOfMassageController;
@@ -53,6 +54,12 @@ Route::middleware([IsUserAuth::class])->group(function () {
     Route::put('update-tag/{id}', [TagController::class, 'UpdateTag']);
     Route::delete('delete-tag/{id}', [TagController::class, 'DeleteTag']);
 
+    Route::prefix('tags')->group(function () {
+        Route::post('/add/{personId}', [TagBatchController::class, 'AddTags']);
+        Route::put('/update', [TagBatchController::class, 'UpdateTags']);
+        Route::delete('/delete', [TagBatchController::class, 'DeleteTags']);
+    });
+
     Route::controller(AuthController::class)->group(function () {
         Route::get('me', 'GetUser');
         Route::post('logout', 'logout');
@@ -68,6 +75,7 @@ Route::middleware([IsUserAuth::class])->group(function () {
         Route::delete(  'admin/delete/{id}',        [RegisterController::class,         'deleteUser']);
         Route::post(    'subscriptions/{userId}',   [SubscriptionController::class,     'store']);
         Route::get(     'subscriptions/check',      [SubscriptionController::class,     'checkSubscriptions']);
+        Route::get(     'all_people',                   [PersonController::class,           'GetAllPeople']);
     });
 
     Route::middleware([IsModel::class])->group(function () {
