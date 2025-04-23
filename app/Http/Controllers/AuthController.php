@@ -62,11 +62,18 @@ class AuthController extends Controller
     {
         $user = Auth::user();
 
-        // Filtrar solo los campos necesarios
+        if (!$user) {
+            return response()->json(['message' => 'Usuario no autenticado'], 401);
+        }
+        $user->load('tags');
+
         $userData = $user->only(['id', 'name', 'email', 'role']);
+
+        $userData['tags'] = $user->tags;
 
         return response()->json($userData);
     }
+
 
     public function Logout(Request $request)
     {
