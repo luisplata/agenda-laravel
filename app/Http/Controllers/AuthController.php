@@ -52,7 +52,7 @@ class AuthController extends Controller
             $user = User::where('email', $request->email)->first();
             $user->token = $token;
             $user->save();
-            return response()->json(['token' => $token]);
+            return response()->json(['token' => $token, "profile" => $user->role]);
         } catch (JWTException $e) {
             return response()->json(['message' => 'No se pudo crear el token'], 500);
         }
@@ -63,7 +63,7 @@ class AuthController extends Controller
         $user = Auth::user();
 
         // Filtrar solo los campos necesarios
-        $userData = $user->only(['id', 'name', 'email']);
+        $userData = $user->only(['id', 'name', 'email', 'role']);
 
         return response()->json($userData);
     }
