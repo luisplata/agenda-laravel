@@ -63,18 +63,19 @@ class AuthController extends Controller
     {
         $user = Auth::user();
 
+        $userData = $user->only(['id', 'name', 'email', 'role']);
+
         $person = Person::where('user_id', $user->id)->first();
 
         if ($person === null) {
             return response()->json(['message' => 'Persona no encontrada'], 404);
         }
 
-        $person['email'] = $user->email;
-        $person['role'] = $user->role;
-
         $person->load('tags');
 
-        return response()->json($person);
+        $userData['Persona'] = $person;
+
+        return response()->json($userData);
     }
 
     public function Logout(Request $request)
