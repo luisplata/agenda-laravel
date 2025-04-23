@@ -69,6 +69,8 @@ class AuthController extends Controller
             return response()->json(['message' => 'Persona no encontrada'], 404);
         }
 
+        $person['email'] = $user->email;
+
         $person->load('tags');
 
         return response()->json($person);
