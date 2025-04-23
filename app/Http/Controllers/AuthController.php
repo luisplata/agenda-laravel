@@ -64,13 +64,10 @@ class AuthController extends Controller
         $user = Auth::user();
 
         $userData = $user->only(['id', 'name', 'email', 'role']);
-        if ($user->role === 'Model') {
 
-            $person = Person::where('user_id', $user->id)->first();
+        $person = Person::where('user_id', $user->id)->first();
 
-            if ($person === null) {
-                return response()->json(['message' => 'Persona no encontrada'], 404);
-            }
+        if ($person != null) {
 
             $person->load('tags');
 
