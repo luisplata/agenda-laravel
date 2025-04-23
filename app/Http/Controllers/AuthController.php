@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Person;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -62,10 +63,17 @@ class AuthController extends Controller
     {
         $user = Auth::user();
 
-        // Filtrar solo los campos necesarios
-        $userData = $user->only(['id', 'name', 'email', 'role']);
+        $person = Person::where('user_id', $user->id)->first();
 
-        return response()->json($userData);
+        if ($person === null) {
+            return response()->json(['message' => 'Persona no encontrada'], 404);
+        }
+
+        $person['email'] = $user->email;
+
+        $person->load('tags');
+
+        return response()->json($person);
     }
 
     public function Logout(Request $request)

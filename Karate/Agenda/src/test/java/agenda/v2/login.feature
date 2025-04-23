@@ -32,6 +32,7 @@ Feature: Login API
         Then status 200
         * print 'Login Response:', response
         And match response.token != null
+        And match response.profile == 'Admin'
         * def tokenAuth = response.token
         * def loggedUser = "test@example.com"
 
@@ -43,5 +44,6 @@ Feature: Login API
         Then status 200
         * print 'Login Response:', response
         And match response.token != null
+        And match response.profile == 'Model'
         * def tokenAuth = response.token
         * def loggedUser = "model@example.com"

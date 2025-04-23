@@ -14,6 +14,7 @@ Feature: Auth API
         When method get
         Then status 200
         And match response.email == expectedEmail
+        And match response.role == 'Model'
 
     Scenario: Logout
         Given path 'logout'
