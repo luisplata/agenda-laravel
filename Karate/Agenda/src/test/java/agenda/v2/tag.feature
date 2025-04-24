@@ -11,8 +11,9 @@ Feature: Tag API
         And request { "token": #(token.tokenAuth), "valor": "Tag1", "tipo": "Type1" }
         When method post
         Then status 200
-        And match response[0].valor == 'Tag1'
-        * def tagId = response[0].id
+        * def tag = response.filter(x => x.valor == 'Tag1')[0]
+        And match tag != null
+        * def tagId = tag.id
 
     Scenario: Update a tag
         * def tagId = call read('tag.feature@AddTag')

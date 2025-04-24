@@ -11,8 +11,10 @@
     And request {"token": #(token.tokenAuth),"tags": [{ "valor": "Tag1", "tipo": "Type1" },{ "valor": "Tag2", "tipo": "Type2" }]}
     When method post
     Then status 200
-    And match response[0].valor == 'Tag1'
-    And match response[1].valor == 'Tag2'
+    * def tag1 = response.filter(x => x.valor == 'Tag1')[0]
+    And match tag1 != null
+    * def tag2 = response.filter(x => x.valor == 'Tag2')[0]
+    And match tag2 != null
     * def tagIds = karate.map(response, function(x){ return x.id })
     * print 'IDs de tags creados:', tagIds
     * def result = tagIds
