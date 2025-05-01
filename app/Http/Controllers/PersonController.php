@@ -53,6 +53,7 @@ class PersonController extends Controller
             'tipo' => 'telegram',
             'valor' => $request->telegram,
         ]);
+        $person->load('tags');
         return response()->json($person, 201);
     }
 
