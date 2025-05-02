@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Tymon\JWTAuth\Contracts\JWTSubject;
+use App\Notifications\CustomResetPasswordLink;
 
 class User extends Authenticatable implements JWTSubject
 {
@@ -75,5 +76,10 @@ class User extends Authenticatable implements JWTSubject
         static::deleting(function ($user) {
             $user->person()->delete();
         });
+    }
+
+    public function sendPasswordResetNotification($token)
+    {
+        $this->notify(new CustomResetPasswordLink($token));
     }
 }
