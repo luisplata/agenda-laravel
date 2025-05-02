@@ -25,6 +25,8 @@ use App\Http\Middleware\IsAssistant;
 use App\Http\Middleware\IsModel;
 use App\Http\Middleware\IsUserAuth;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Auth\PasswordResetLinkController;
+use App\Http\Controllers\Auth\NewPasswordController;
 
 //Public Routes
 Route::post('login', [AuthController::class, 'Login']);
@@ -45,6 +47,8 @@ Route::get('typeOfMassage', [TypeOfMassageController::class, 'typeOfMassageList'
 Route::get('virtualServices', [VirtualServicesController::class, 'virtualServicesList']);
 Route::get('additionalServices', [AdditionalController::class, 'listAdditionalServices']);
 
+Route::post('/forgot-password', [PasswordResetLinkController::class, 'store']);
+Route::post('/reset-password', [NewPasswordController::class, 'store']);
 
 Route::middleware([IsUserAuth::class])->group(function () {
 
