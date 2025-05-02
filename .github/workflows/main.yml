@@ -42,7 +42,7 @@ jobs:
               echo "🚀 Pulling latest changes..."
               git pull origin main &&
               echo "📦 Installing dependencies..."
-              composer install--optimize-autoloader &&
+              composer install &&
               composer update &&
               echo "🔄 Running migrations..."
               php artisan migrate:fresh --seed &&
