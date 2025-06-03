@@ -34,6 +34,14 @@ class User extends Authenticatable implements JWTSubject
     protected $hidden = [
         'password',
         'remember_token',
+        'token',
+        'email_verified_at',
+        'created_at',
+        'updated_at',
+        'deleted_at',
+        'two_factor_secret',
+        'two_factor_recovery_codes',
+        'two_factor_confirmed_at',
     ];
 
     /**
@@ -82,4 +90,10 @@ class User extends Authenticatable implements JWTSubject
     {
         $this->notify(new CustomResetPasswordLink($token));
     }
+
+    public function ultimaUbicacion()
+    {
+        return $this->hasOne(Ubicacion::class)->latestOfMany();
+    }
+
 }
