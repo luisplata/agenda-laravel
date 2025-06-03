@@ -53,6 +53,7 @@ Route::post('/reset-password', [NewPasswordController::class, 'store']);
 
 // Routes for ubicaciones
 Route::get('/usuarios-cerca', [UbicacionController::class, 'usuariosCerca']);
+Route::get('/ubicacion/{id}', [UbicacionController::class, 'ultimaUbicacion']);
 //$user->load('ultimaUbicacion');
 
 
@@ -65,7 +66,6 @@ Route::middleware([IsUserAuth::class])->group(function () {
     Route::delete('delete-tag/{id}', [TagController::class, 'DeleteTag']);
 
     Route::post('/ubicaciones', [UbicacionController::class, 'guardar']);
-    Route::get('/ubicacion', [UbicacionController::class, 'ultimaUbicacion']);
 
     Route::prefix('tags')->group(function () {
         Route::post('/add/{personId}', [TagBatchController::class, 'AddTags']);

@@ -30,11 +30,9 @@ class UbicacionController extends Controller
             'ubicacion' => $ubicacion
         ], 201);
     }
-
-    public function ultimaUbicacion()
+    public function ultimaUbicacion($id)
     {
-        $user = Auth::user();
-        $ultima = Ubicacion::where('user_id', $user->id)
+        $ultima = Ubicacion::where('user_id', $id)
             ->latest()
             ->first();
 
