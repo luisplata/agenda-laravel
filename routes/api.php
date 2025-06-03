@@ -27,6 +27,7 @@ use App\Http\Middleware\IsUserAuth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\NewPasswordController;
+use App\Http\Controllers\UbicacionController;
 
 //Public Routes
 Route::post('login', [AuthController::class, 'Login']);
@@ -58,6 +59,10 @@ Route::middleware([IsUserAuth::class])->group(function () {
     Route::put('update-tag/{id}', [TagController::class, 'UpdateTag']);
     Route::delete('delete-tag/{id}', [TagController::class, 'DeleteTag']);
 
+    Route::post('/ubicaciones', [UbicacionController::class, 'guardar']);
+    Route::get('/ubicacion', [UbicacionController::class, 'ultimaUbicacion']);
+    Route::get('/usuarios-cerca', [UbicacionController::class, 'usuariosCerca']);
+
     Route::prefix('tags')->group(function () {
         Route::post('/add/{personId}', [TagBatchController::class, 'AddTags']);
         Route::put('/update', [TagBatchController::class, 'UpdateTags']);
@@ -70,16 +75,16 @@ Route::middleware([IsUserAuth::class])->group(function () {
     });
 
     Route::middleware([IsAdmin::class])->group(function () {
-        Route::post(    'upload/image/{personId}',  [UploadController::class,           'uploadImage']);
-        Route::post(    'upload/video/{personId}',  [UploadController::class,           'uploadVideo']);
-        Route::delete(  'upload/image/{mediaId}',   [UploadController::class,           'deleteMedia']);
-        Route::delete(  'upload/video/{mediaId}',   [UploadController::class,           'deleteMedia']);
-        Route::delete(  'delete/{id}',              [PersonController::class,           'DeletePerson']);
-        Route::post(    'admin/register',           [RegisterController::class,         'registerAssistant']);
-        Route::delete(  'admin/delete/{id}',        [RegisterController::class,         'deleteUser']);
-        Route::post(    'subscriptions/{userId}',   [SubscriptionController::class,     'store']);
-        Route::get(     'subscriptions/check',      [SubscriptionController::class,     'checkSubscriptions']);
-        Route::get(     'all_people',                   [PersonController::class,           'GetAllPeople']);
+        Route::post('upload/image/{personId}', [UploadController::class, 'uploadImage']);
+        Route::post('upload/video/{personId}', [UploadController::class, 'uploadVideo']);
+        Route::delete('upload/image/{mediaId}', [UploadController::class, 'deleteMedia']);
+        Route::delete('upload/video/{mediaId}', [UploadController::class, 'deleteMedia']);
+        Route::delete('delete/{id}', [PersonController::class, 'DeletePerson']);
+        Route::post('admin/register', [RegisterController::class, 'registerAssistant']);
+        Route::delete('admin/delete/{id}', [RegisterController::class, 'deleteUser']);
+        Route::post('subscriptions/{userId}', [SubscriptionController::class, 'store']);
+        Route::get('subscriptions/check', [SubscriptionController::class, 'checkSubscriptions']);
+        Route::get('all_people', [PersonController::class, 'GetAllPeople']);
     });
 
     Route::middleware([IsModel::class])->group(function () {
