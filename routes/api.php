@@ -51,6 +51,11 @@ Route::get('additionalServices', [AdditionalController::class, 'listAdditionalSe
 Route::post('/forgot-password', [PasswordResetLinkController::class, 'store']);
 Route::post('/reset-password', [NewPasswordController::class, 'store']);
 
+// Routes for ubicaciones
+Route::get('/usuarios-cerca', [UbicacionController::class, 'usuariosCerca']);
+//$user->load('ultimaUbicacion');
+
+
 Route::middleware([IsUserAuth::class])->group(function () {
 
     Route::post('create', [PersonController::class, 'CreatePerson']);
@@ -61,7 +66,6 @@ Route::middleware([IsUserAuth::class])->group(function () {
 
     Route::post('/ubicaciones', [UbicacionController::class, 'guardar']);
     Route::get('/ubicacion', [UbicacionController::class, 'ultimaUbicacion']);
-    Route::get('/usuarios-cerca', [UbicacionController::class, 'usuariosCerca']);
 
     Route::prefix('tags')->group(function () {
         Route::post('/add/{personId}', [TagBatchController::class, 'AddTags']);

@@ -99,7 +99,6 @@ function enviarUbicacionAlServidor(latitude, longitude, ciudad = null) {
             "Content-Type": "application/json"
         },
         body: JSON.stringify({
-            user_id: 1, // opcional si usas autenticación basada en token
             latitud: latitude,
             longitud: longitude,
             ciudad: ciudad,

@@ -90,4 +90,10 @@ class User extends Authenticatable implements JWTSubject
     {
         $this->notify(new CustomResetPasswordLink($token));
     }
+
+    public function ultimaUbicacion()
+    {
+        return $this->hasOne(Ubicacion::class)->latestOfMany();
+    }
+
 }

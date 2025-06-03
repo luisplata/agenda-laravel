@@ -5,6 +5,7 @@ use Illuminate\Http\Request;
 use App\Models\Ubicacion;
 use Illuminate\Support\Facades\DB;
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 
 class UbicacionController extends Controller
 {
@@ -14,11 +15,13 @@ class UbicacionController extends Controller
             'latitud' => 'required|numeric',
             'longitud' => 'required|numeric',
             'ciudad' => 'nullable|string|max:255',
-            'user_id' => 'required|integer',
         ]);
 
         // Usa el usuario autenticado, ignora el user_id recibido
-        $validated['user_id'] = auth()->id();
+        $user = Auth::user();
+        $validated['user_id'] = $user->id;
+
+        //dd($validated);
 
         $ubicacion = Ubicacion::create($validated);
 
@@ -30,7 +33,8 @@ class UbicacionController extends Controller
 
     public function ultimaUbicacion()
     {
-        $ultima = Ubicacion::where('user_id', auth()->id())
+        $user = Auth::user();
+        $ultima = Ubicacion::where('user_id', $user->id)
             ->latest()
             ->first();
 
@@ -76,13 +80,17 @@ class UbicacionController extends Controller
         //load all user data
         $results = $results->map(function ($ubicacion) {
             $user = User::find($ubicacion->user_id);
-            if ($user) {
-                $ubicacion->user = $user;
-            } else {
-                $ubicacion->user = null; // O manejar el caso donde no se encuentra el usuario
-            }
-            return $ubicacion;
+            return [
+                'distancia' => round($ubicacion->distancia, 2),
+                'user' => $user ? [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    // Agrega más campos si necesitas
+                ] : null
+            ];
         });
+
 
         return response()->json($results);
     }
