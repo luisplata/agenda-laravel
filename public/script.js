@@ -93,7 +93,7 @@ function enviarUbicacionAlServidor(latitude, longitude, ciudad = null) {
         return;
     }
 
-    fetch("http://127.0.0.1:8000/api/ubicaciones", {
+    fetch("/api/ubicaciones", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -124,7 +124,7 @@ function cargarUltimaUbicacionDesdeServidor() {
         return;
     }
 
-    fetch(`http://127.0.0.1:8000/api/ubicacion?token=${encodeURIComponent(token)}`)
+    fetch(`/api/ubicacion?token=${encodeURIComponent(token)}`)
     .then(res => {
         if (!res.ok) {
             throw new Error("No se pudo obtener la ubicación.");
@@ -163,7 +163,7 @@ function buscarUsuariosCerca(kilometros) {
                 return;
             }
 
-            const url = `http://127.0.0.1:8000/api/usuarios-cerca?latitud=${lat}&longitud=${lon}&kilometros=${kilometros}&token=${encodeURIComponent(token)}`;
+            const url = `/api/usuarios-cerca?latitud=${lat}&longitud=${lon}&kilometros=${kilometros}&token=${encodeURIComponent(token)}`;
 
             fetch(url, {
                 headers: {
