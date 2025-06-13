@@ -65,7 +65,9 @@ class AuthController extends Controller
 
         $userData = $user->only(['id', 'name', 'email', 'role']);
 
-        $person = Person::where('user_id', $user->id)->latest();
+        $person = Person::where('user_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->first();
 
         if ($person != null) {
 
