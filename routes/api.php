@@ -96,6 +96,7 @@ Route::middleware([IsUserAuth::class])->group(function () {
         Route::get('profile/visits/last-7-days', [ProfileVisitController::class, 'last7Days']);
         Route::get('profile/visits/last-month', [ProfileVisitController::class, 'lastMonth']);
         Route::get('profile/visits/last-3-months', [ProfileVisitController::class, 'last3Months']);
+        Route::get('profile/suscription', [ProfileVisitController::class, 'suscription']);
     });
 
 
