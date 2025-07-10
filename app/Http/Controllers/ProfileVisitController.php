@@ -56,4 +56,13 @@ class ProfileVisitController extends Controller
         return response()->json(ProfileVisit::getVisitsByRange('3 MONTH', $user->id));
     }
 
+    public function suscription()
+    {
+        $user = auth('api')->user();
+        return response()->json([
+            'active'=>$user->subscription->isActive(),
+            'end_date'=>$user->subscription->expires_at
+        ]);
+    }
+
 }
