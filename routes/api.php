@@ -25,6 +25,9 @@ use App\Http\Middleware\IsAssistant;
 use App\Http\Middleware\IsModel;
 use App\Http\Middleware\IsUserAuth;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Auth\PasswordResetLinkController;
+use App\Http\Controllers\Auth\NewPasswordController;
+use App\Http\Controllers\UbicacionController;
 
 //Public Routes
 Route::post('login', [AuthController::class, 'Login']);
@@ -45,6 +48,14 @@ Route::get('typeOfMassage', [TypeOfMassageController::class, 'typeOfMassageList'
 Route::get('virtualServices', [VirtualServicesController::class, 'virtualServicesList']);
 Route::get('additionalServices', [AdditionalController::class, 'listAdditionalServices']);
 
+Route::post('/forgot-password', [PasswordResetLinkController::class, 'store']);
+Route::post('/reset-password', [NewPasswordController::class, 'store']);
+
+// Routes for ubicaciones
+Route::get('/usuarios-cerca', [UbicacionController::class, 'usuariosCerca']);
+Route::get('/ubicacion/{id}', [UbicacionController::class, 'ultimaUbicacion']);
+//$user->load('ultimaUbicacion');
+
 
 Route::middleware([IsUserAuth::class])->group(function () {
 
@@ -53,6 +64,8 @@ Route::middleware([IsUserAuth::class])->group(function () {
     Route::post('add-tag/{id}', [TagController::class, 'AddTag']);
     Route::put('update-tag/{id}', [TagController::class, 'UpdateTag']);
     Route::delete('delete-tag/{id}', [TagController::class, 'DeleteTag']);
+
+    Route::post('/ubicaciones', [UbicacionController::class, 'guardar']);
 
     Route::prefix('tags')->group(function () {
         Route::post('/add/{personId}', [TagBatchController::class, 'AddTags']);
@@ -66,16 +79,16 @@ Route::middleware([IsUserAuth::class])->group(function () {
     });
 
     Route::middleware([IsAdmin::class])->group(function () {
-        Route::post(    'upload/image/{personId}',  [UploadController::class,           'uploadImage']);
-        Route::post(    'upload/video/{personId}',  [UploadController::class,           'uploadVideo']);
-        Route::delete(  'upload/image/{mediaId}',   [UploadController::class,           'deleteMedia']);
-        Route::delete(  'upload/video/{mediaId}',   [UploadController::class,           'deleteMedia']);
-        Route::delete(  'delete/{id}',              [PersonController::class,           'DeletePerson']);
-        Route::post(    'admin/register',           [RegisterController::class,         'registerAssistant']);
-        Route::delete(  'admin/delete/{id}',        [RegisterController::class,         'deleteUser']);
-        Route::post(    'subscriptions/{userId}',   [SubscriptionController::class,     'store']);
-        Route::get(     'subscriptions/check',      [SubscriptionController::class,     'checkSubscriptions']);
-        Route::get(     'all_people',                   [PersonController::class,           'GetAllPeople']);
+        Route::post('upload/image/{personId}', [UploadController::class, 'uploadImage']);
+        Route::post('upload/video/{personId}', [UploadController::class, 'uploadVideo']);
+        Route::delete('upload/image/{mediaId}', [UploadController::class, 'deleteMedia']);
+        Route::delete('upload/video/{mediaId}', [UploadController::class, 'deleteMedia']);
+        Route::delete('delete/{id}', [PersonController::class, 'DeletePerson']);
+        Route::post('admin/register', [RegisterController::class, 'registerAssistant']);
+        Route::delete('admin/delete/{id}', [RegisterController::class, 'deleteUser']);
+        Route::post('subscriptions/{userId}', [SubscriptionController::class, 'store']);
+        Route::get('subscriptions/check', [SubscriptionController::class, 'checkSubscriptions']);
+        Route::get('all_people', [PersonController::class, 'GetAllPeople']);
     });
 
     Route::middleware([IsModel::class])->group(function () {
@@ -83,6 +96,7 @@ Route::middleware([IsUserAuth::class])->group(function () {
         Route::get('profile/visits/last-7-days', [ProfileVisitController::class, 'last7Days']);
         Route::get('profile/visits/last-month', [ProfileVisitController::class, 'lastMonth']);
         Route::get('profile/visits/last-3-months', [ProfileVisitController::class, 'last3Months']);
+        Route::get('profile/suscription', [ProfileVisitController::class, 'suscription']);
     });
 
 

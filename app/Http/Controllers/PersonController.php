@@ -37,6 +37,23 @@ class PersonController extends Controller
             'mapa' => $request->mapa,
             'user_id' => $user->id
         ]);
+        $person->tags()->create([
+            'tipo' => 'about_me',
+            'valor' => $request->about,
+        ]);
+        $person->tags()->create([
+            'tipo' => 'nombre',
+            'valor' => $request->nombre,
+        ]);
+        $person->tags()->create([
+            'tipo' => 'whatsapp',
+            'valor' => $request->whatsapp,
+        ]);
+        $person->tags()->create([
+            'tipo' => 'telegram',
+            'valor' => $request->telegram,
+        ]);
+        $person->load('tags');
         return response()->json($person, 201);
     }
 

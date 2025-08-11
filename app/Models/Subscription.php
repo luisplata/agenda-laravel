@@ -29,7 +29,7 @@ class Subscription extends Model
      */
     public function isActive()
     {
-        return $this->status === 1 && Carbon::now()->lt(Carbon::parse($this->expires_at));
+        return (int) $this->status === 1 && Carbon::now()->lt(Carbon::parse($this->expires_at));
     }
 
     /**
