@@ -23,7 +23,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Execute SSH commands
         uses: appleboy/ssh-action@master
@@ -38,7 +38,7 @@ jobs:
             LOG_FILE="$APP_DIR/deployment_$(date '+%Y-%m-%d_%H-%M-%S').log"
             {
               echo "🚀 Pulling latest changes..."
-              git pull origin main &&
+              git pull origin ${{ github.ref_name }} &&
               echo "📦 Installing dependencies..."
               ${{ secrets.SSH_COMPOSER }}/composer install &&
               echo "🔄 Running migrations..."
