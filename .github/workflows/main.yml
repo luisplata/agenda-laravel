@@ -4,6 +4,7 @@ on:
   pull_request:
     branches:
       - deploy
+      - main
   workflow_dispatch:
     inputs:
       environment:
@@ -39,7 +40,7 @@ jobs:
               echo "🚀 Pulling latest changes..."
               git pull origin main &&
               echo "📦 Installing dependencies..."
-              composer install &&
+              ${{ secrets.SSH_COMPOSER }}/composer install &&
               echo "🔄 Running migrations..."
               php artisan migrate:fresh --seed &&
               echo "🧹 Clearing and caching Laravel config..."
