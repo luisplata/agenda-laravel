@@ -10,6 +10,7 @@ on:
       environment:
         description: "Select the environment"
         required: true
+        type: choice
         default: "Dev"
         options:
           - Dev
