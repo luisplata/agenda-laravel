@@ -41,9 +41,13 @@ jobs:
               echo "🚀 Pulling latest changes..."
               git pull origin ${{ github.ref_name }} &&
               echo "📦 Installing dependencies..."
-              ${{ secrets.SSH_COMPOSER }}/composer install &&
+              ${{ secrets.SSH_COMPOSER }}composer install &&
               echo "🔄 Running migrations..."
-              php artisan migrate:fresh --seed &&
+              if [ "${{ github.event.inputs.environment }}" == "Production" ]; then
+                php artisan migrate
+              else
+                php artisan migrate:fresh --seed
+              fi &&
               echo "🧹 Clearing and caching Laravel config..."
               php artisan config:clear &&
               php artisan config:cache &&
