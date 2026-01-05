@@ -1,0 +1,1070 @@
+openapi: 3.0.0
+info:
+  title: Agenda API
+  description: API para gestión de perfiles, usuarios y servicios
+  version: 1.0.0
+  contact:
+    name: API Support
+
+servers:
+  - url: http://localhost:8000/api
+    description: Development Server
+  - url: https://api.example.com/api
+    description: Production Server
+
+paths:
+  /login:
+    post:
+      summary: Iniciar sesión
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: user@example.com
+                password:
+                  type: string
+                  example: password123
+              required:
+                - email
+                - password
+      responses:
+        '200':
+          description: Inicio de sesión exitoso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  token:
+                    type: string
+                  user:
+                    $ref: '#/components/schemas/User'
+        '401':
+          description: Credenciales inválidas
+
+  /register:
+    post:
+      summary: Registrar nuevo usuario
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRegister'
+      responses:
+        '201':
+          description: Usuario registrado exitosamente
+        '422':
+          description: Datos de validación inválidos
+
+  /me:
+    get:
+      summary: Obtener datos del usuario autenticado
+      tags:
+        - Authentication
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Datos del usuario
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: No autenticado
+
+  /logout:
+    post:
+      summary: Cerrar sesión
+      tags:
+        - Authentication
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Sesión cerrada
+
+  /people:
+    get:
+      summary: Obtener lista de perfiles
+      tags:
+        - People
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Lista de perfiles
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Person'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+
+  /all_people:
+    get:
+      summary: Obtener todos los perfiles (Admin)
+      tags:
+        - People
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Lista completa de perfiles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Person'
+
+  /people/{id}:
+    get:
+      summary: Obtener datos de un perfil específico
+      tags:
+        - People
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Datos del perfil
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Person'
+        '404':
+          description: Perfil no encontrado
+
+    put:
+      summary: Actualizar perfil
+      tags:
+        - People
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PersonUpdate'
+      responses:
+        '200':
+          description: Perfil actualizado
+        '404':
+          description: Perfil no encontrado
+
+    delete:
+      summary: Eliminar perfil (Admin)
+      tags:
+        - People
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Perfil eliminado
+        '404':
+          description: Perfil no encontrado
+
+  /create:
+    post:
+      summary: Crear nuevo perfil
+      tags:
+        - People
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PersonCreate'
+      responses:
+        '201':
+          description: Perfil creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Person'
+
+  /increment/{id}:
+    get:
+      summary: Incrementar vistas del perfil
+      tags:
+        - People
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Vista incrementada
+
+  /upload/image/{personId}:
+    post:
+      summary: Subir imagen (Admin)
+      tags:
+        - Media
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: personId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                image:
+                  type: string
+                  format: binary
+      responses:
+        '201':
+          description: Imagen subida exitosamente
+        '422':
+          description: Error en la validación
+
+  /upload/video/{personId}:
+    post:
+      summary: Subir video (Admin)
+      tags:
+        - Media
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: personId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                video:
+                  type: string
+                  format: binary
+      responses:
+        '201':
+          description: Video subido exitosamente
+
+  /upload/image/{mediaId}:
+    delete:
+      summary: Eliminar imagen
+      tags:
+        - Media
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: mediaId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Imagen eliminada
+
+  /upload/video/{mediaId}:
+    delete:
+      summary: Eliminar video
+      tags:
+        - Media
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: mediaId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Video eliminado
+
+  /add-tag/{id}:
+    post:
+      summary: Agregar etiqueta a un perfil
+      tags:
+        - Tags
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tag_id:
+                  type: integer
+      responses:
+        '201':
+          description: Etiqueta agregada
+
+  /update-tag/{id}:
+    put:
+      summary: Actualizar etiqueta
+      tags:
+        - Tags
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+      responses:
+        '200':
+          description: Etiqueta actualizada
+
+  /delete-tag/{id}:
+    delete:
+      summary: Eliminar etiqueta
+      tags:
+        - Tags
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Etiqueta eliminada
+
+  /tags/add/{personId}:
+    post:
+      summary: Agregar múltiples etiquetas
+      tags:
+        - Tags
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: personId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tags:
+                  type: array
+                  items:
+                    type: integer
+      responses:
+        '201':
+          description: Etiquetas agregadas
+
+  /tags/update:
+    put:
+      summary: Actualizar múltiples etiquetas
+      tags:
+        - Tags
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tags:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      name:
+                        type: string
+      responses:
+        '200':
+          description: Etiquetas actualizadas
+
+  /tags/delete:
+    delete:
+      summary: Eliminar múltiples etiquetas
+      tags:
+        - Tags
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tag_ids:
+                  type: array
+                  items:
+                    type: integer
+      responses:
+        '204':
+          description: Etiquetas eliminadas
+
+  /list_categories:
+    get:
+      summary: Obtener categorías disponibles
+      tags:
+        - Categories
+      responses:
+        '200':
+          description: Lista de categorías
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Category'
+
+  /payment_methods_list:
+    get:
+      summary: Obtener métodos de pago
+      tags:
+        - Payment
+      responses:
+        '200':
+          description: Lista de métodos de pago
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PaymentMethod'
+
+  /services:
+    get:
+      summary: Obtener servicios disponibles
+      tags:
+        - Services
+      responses:
+        '200':
+          description: Lista de servicios
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Service'
+
+  /subscriptions/{userId}:
+    post:
+      summary: Crear suscripción (Admin)
+      tags:
+        - Subscriptions
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                plan:
+                  type: string
+                  enum: [basic, premium, deluxe]
+                duration_days:
+                  type: integer
+      responses:
+        '201':
+          description: Suscripción creada
+
+  /subscriptions/check:
+    get:
+      summary: Verificar suscripciones (Admin)
+      tags:
+        - Subscriptions
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Estado de suscripciones
+
+  /profile/visit:
+    post:
+      summary: Registrar visita de perfil (Models)
+      tags:
+        - Profile
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                person_id:
+                  type: integer
+      responses:
+        '201':
+          description: Visita registrada
+
+  /profile/visits/last-7-days:
+    get:
+      summary: Obtener visitas últimos 7 días (Models)
+      tags:
+        - Profile
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Visitas del período
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProfileVisit'
+
+  /profile/visits/last-month:
+    get:
+      summary: Obtener visitas último mes (Models)
+      tags:
+        - Profile
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Visitas del período
+
+  /profile/visits/last-3-months:
+    get:
+      summary: Obtener visitas últimos 3 meses (Models)
+      tags:
+        - Profile
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Visitas del período
+
+  /profile/suscription:
+    get:
+      summary: Obtener información de suscripción (Models)
+      tags:
+        - Profile
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Información de suscripción
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subscription'
+
+  /typeOfBody:
+    get:
+      summary: Obtener tipos de cuerpo
+      tags:
+        - Attributes
+      responses:
+        '200':
+          description: Lista de tipos de cuerpo
+
+  /bust:
+    get:
+      summary: Obtener tamaños de busto
+      tags:
+        - Attributes
+      responses:
+        '200':
+          description: Lista de tamaños
+
+  /tail:
+    get:
+      summary: Obtener información de cola
+      tags:
+        - Attributes
+      responses:
+        '200':
+          description: Lista de opciones
+
+  /bioType:
+    get:
+      summary: Obtener tipos biológicos
+      tags:
+        - Attributes
+      responses:
+        '200':
+          description: Lista de tipos
+
+  /oralType:
+    get:
+      summary: Obtener tipos orales
+      tags:
+        - Attributes
+      responses:
+        '200':
+          description: Lista de tipos
+
+  /fantasyType:
+    get:
+      summary: Obtener tipos de fantasía
+      tags:
+        - Attributes
+      responses:
+        '200':
+          description: Lista de tipos
+
+  /typeOfMassage:
+    get:
+      summary: Obtener tipos de masaje
+      tags:
+        - Attributes
+      responses:
+        '200':
+          description: Lista de tipos
+
+  /virtualServices:
+    get:
+      summary: Obtener servicios virtuales
+      tags:
+        - Services
+      responses:
+        '200':
+          description: Lista de servicios
+
+  /additionalServices:
+    get:
+      summary: Obtener servicios adicionales
+      tags:
+        - Services
+      responses:
+        '200':
+          description: Lista de servicios
+
+  /ubicaciones:
+    post:
+      summary: Guardar ubicación
+      tags:
+        - Location
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                latitude:
+                  type: number
+                longitude:
+                  type: number
+                accuracy:
+                  type: number
+      responses:
+        '201':
+          description: Ubicación guardada
+
+  /usuarios-cerca:
+    get:
+      summary: Obtener usuarios cercanos
+      tags:
+        - Location
+      parameters:
+        - name: latitude
+          in: query
+          required: true
+          schema:
+            type: number
+        - name: longitude
+          in: query
+          required: true
+          schema:
+            type: number
+        - name: distance
+          in: query
+          schema:
+            type: number
+            default: 5
+      responses:
+        '200':
+          description: Usuarios cercanos
+
+  /ubicacion/{id}:
+    get:
+      summary: Obtener última ubicación de un usuario
+      tags:
+        - Location
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Ubicación del usuario
+
+  /forgot-password:
+    post:
+      summary: Solicitar restablecimiento de contraseña
+      tags:
+        - Password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+      responses:
+        '200':
+          description: Enlace enviado al correo
+
+  /reset-password:
+    post:
+      summary: Restablecer contraseña
+      tags:
+        - Password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                token:
+                  type: string
+                password:
+                  type: string
+                password_confirmation:
+                  type: string
+      responses:
+        '200':
+          description: Contraseña restablecida
+
+  /admin/register:
+    post:
+      summary: Registrar asistente (Admin)
+      tags:
+        - Admin
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRegister'
+      responses:
+        '201':
+          description: Asistente registrado
+
+  /admin/delete/{id}:
+    delete:
+      summary: Eliminar usuario (Admin)
+      tags:
+        - Admin
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Usuario eliminado
+
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+          enum: [user, admin, model, assistant]
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    UserRegister:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+        password_confirmation:
+          type: string
+        phone:
+          type: string
+      required:
+        - name
+        - email
+        - password
+        - password_confirmation
+
+    Person:
+      type: object
+      properties:
+        id:
+          type: integer
+        user_id:
+          type: integer
+        name:
+          type: string
+        age:
+          type: integer
+        bio:
+          type: string
+        visibility:
+          type: string
+          enum: [public, private]
+        views:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        media:
+          type: array
+          items:
+            $ref: '#/components/schemas/Media'
+        tags:
+          type: array
+          items:
+            $ref: '#/components/schemas/Tag'
+
+    PersonCreate:
+      type: object
+      properties:
+        name:
+          type: string
+        age:
+          type: integer
+        bio:
+          type: string
+        visibility:
+          type: string
+          enum: [public, private]
+        category_id:
+          type: integer
+        phone:
+          type: string
+      required:
+        - name
+        - age
+
+    PersonUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        age:
+          type: integer
+        bio:
+          type: string
+        visibility:
+          type: string
+
+    Category:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+
+    Tag:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        person_id:
+          type: integer
+
+    Media:
+      type: object
+      properties:
+        id:
+          type: integer
+        person_id:
+          type: integer
+        type:
+          type: string
+          enum: [image, video]
+        url:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+    PaymentMethod:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+
+    Service:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        price:
+          type: number
+
+    Subscription:
+      type: object
+      properties:
+        id:
+          type: integer
+        user_id:
+          type: integer
+        plan:
+          type: string
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+        active:
+          type: boolean
+
+    ProfileVisit:
+      type: object
+      properties:
+        id:
+          type: integer
+        person_id:
+          type: integer
+        visitor_id:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+
+    Pagination:
+      type: object
+      properties:
+        current_page:
+          type: integer
+        per_page:
+          type: integer
+        total:
+          type: integer
+        last_page:
+          type: integer
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
