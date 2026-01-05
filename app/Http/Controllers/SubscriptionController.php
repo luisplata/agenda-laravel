@@ -59,7 +59,7 @@ class SubscriptionController extends Controller
         );
 
         // Hacer visible la persona
-        $person->update(['is_visible' => true]); 
+        $person->update(['is_visible' => true]);
 
         return response()->json([
             'message' => 'Suscripción creada o extendida correctamente',
