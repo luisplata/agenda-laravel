@@ -5,6 +5,11 @@ info:
   version: 1.0.0
   contact:
     name: API Support
+  x-security-note: |
+    - Rutas públicas: sin autenticación
+    - IsUserAuth: requiere token válido en query parameter
+    - IsAdmin: requiere token válido + rol "Admin"
+    - IsModel: requiere token válido + rol "Model"
 
 servers:
   - url: http://localhost:8000/api
@@ -42,18 +47,20 @@ paths:
               schema:
                 type: object
                 properties:
-                  success:
-                    type: boolean
                   token:
                     type: string
-                  user:
-                    $ref: '#/components/schemas/User'
+                    example: eyJ0eXAiOiJKV1QiLCJhbGc...
+                  profile:
+                    type: string
+                    enum: [user, admin, model, assistant]
         '401':
           description: Credenciales inválidas
+        '422':
+          description: Datos de validación inválidos
 
   /register:
     post:
-      summary: Registrar nuevo usuario
+      summary: Registrar nuevo usuario (Rol Model)
       tags:
         - Authentication
       requestBody:
@@ -61,90 +68,146 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserRegister'
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: Juan Pérez
+                email:
+                  type: string
+                  example: juan@example.com
+                password:
+                  type: string
+                  example: password123
+                password_confirmation:
+                  type: string
+                  example: password123
+              required:
+                - name
+                - email
+                - password
+                - password_confirmation
       responses:
         '201':
-          description: Usuario registrado exitosamente
+          description: Usuario registrado exitosamente con rol Model
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  user:
+                    $ref: '#/components/schemas/User'
         '422':
           description: Datos de validación inválidos
 
   /me:
     get:
       summary: Obtener datos del usuario autenticado
+      description: "Requiere autenticación (IsUserAuth). Token como parámetro query."
       tags:
         - Authentication
-      security:
-        - bearerAuth: []
-      responses:
-        '200':
-          description: Datos del usuario
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-        '401':
-          description: No autenticado
-
-  /logout:
-    post:
-      summary: Cerrar sesión
-      tags:
-        - Authentication
-      security:
-        - bearerAuth: []
-      responses:
-        '200':
-          description: Sesión cerrada
-
-  /people:
-    get:
-      summary: Obtener lista de perfiles
-      tags:
-        - People
       parameters:
-        - name: page
+        - name: token
           in: query
+          required: true
           schema:
-            type: integer
-        - name: per_page
-          in: query
-          schema:
-            type: integer
+            type: string
+          description: Token de autenticación
       responses:
         '200':
-          description: Lista de perfiles
+          description: Datos del usuario con perfil asociado
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Person'
-                  pagination:
-                    $ref: '#/components/schemas/Pagination'
+                  id:
+                    type: integer
+                  name:
+                    type: string
+                  email:
+                    type: string
+                  role:
+                    type: string
+                    enum: [user, admin, model, assistant]
+                  Persona:
+                    $ref: '#/components/schemas/Person'
+        '401':
+          description: Token inválido o ausente
 
-  /all_people:
-    get:
-      summary: Obtener todos los perfiles (Admin)
+  /logout:
+    post:
+      summary: Cerrar sesión
+      description: "Requiere autenticación (IsUserAuth). Token como parámetro query."
       tags:
-        - People
-      security:
-        - bearerAuth: []
+        - Authentication
+      parameters:
+        - name: token
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Token de autenticación
       responses:
         '200':
-          description: Lista completa de perfiles
+          description: Sesión cerrada
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '401':
+          description: Token inválido o ausente
+
+  /people:
+    get:
+      summary: Obtener perfiles con suscripción activa
+      tags:
+        - People
+      responses:
+        '200':
+          description: Lista de perfiles con suscripción activa y vigente
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Person'
+                  $ref: '#/components/schemas/PersonWithMedia'
+
+  /all_people:
+    get:
+      summary: Obtener todos los perfiles
+      description: "Requiere autenticación (IsUserAuth + IsAdmin). Rol requerido: Admin. Token como parámetro query. Retorna TODOS los perfiles sin filtro de suscripción."
+      tags:
+        - People
+      parameters:
+        - name: token
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Token de autenticación (usuario Admin)
+      responses:
+        '200':
+          description: Lista completa de todos los perfiles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PersonWithMedia'
+        '401':
+          description: Token inválido o ausente
+        '403':
+          description: No autorizado. Se requiere rol Admin
 
   /people/{id}:
     get:
-      summary: Obtener datos de un perfil específico
+      summary: Obtener datos de un perfil y registrar visita
       tags:
         - People
       parameters:
@@ -155,76 +218,161 @@ paths:
             type: integer
       responses:
         '200':
-          description: Datos del perfil
+          description: Datos del perfil. También registra una visita automáticamente
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Person'
+                $ref: '#/components/schemas/PersonWithMedia'
         '404':
           description: Perfil no encontrado
 
     put:
       summary: Actualizar perfil
+      description: Requiere autenticación (IsUserAuth). Token como parámetro query.
       tags:
         - People
-      security:
-        - bearerAuth: []
       parameters:
         - name: id
           in: path
           required: true
           schema:
             type: integer
+        - name: token
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Token de autenticación
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PersonUpdate'
+              type: object
+              properties:
+                nombre:
+                  type: string
+                about:
+                  type: string
+                horario:
+                  type: string
+                tarifa:
+                  type: string
+                whatsapp:
+                  type: string
+                telegram:
+                  type: string
+                mapa:
+                  type: string
+              required:
+                - nombre
+                - about
+                - horario
+                - tarifa
+                - whatsapp
+                - telegram
+                - mapa
       responses:
         '200':
           description: Perfil actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Person'
+        '401':
+          description: Token inválido o ausente
         '404':
           description: Perfil no encontrado
+        '422':
+          description: Datos de validación inválidos
 
     delete:
-      summary: Eliminar perfil (Admin)
+      summary: Eliminar perfil
+      description: "Requiere autenticación (IsUserAuth + IsAdmin). Rol requerido: Admin. Token como parámetro query."
       tags:
         - People
-      security:
-        - bearerAuth: []
       parameters:
         - name: id
           in: path
           required: true
           schema:
             type: integer
+        - name: token
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Token de autenticación (usuario Admin)
       responses:
-        '204':
+        '200':
           description: Perfil eliminado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '401':
+          description: Token inválido o ausente
+        '403':
+          description: No autorizado. Se requiere rol Admin
         '404':
           description: Perfil no encontrado
 
   /create:
     post:
       summary: Crear nuevo perfil
+      description: Requiere autenticación (IsUserAuth). El usuario autenticado debe enviar un token válido como parámetro query.
       tags:
         - People
-      security:
-        - bearerAuth: []
+      parameters:
+        - name: token
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Token de autenticación obtenido al hacer login
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PersonCreate'
+              type: object
+              properties:
+                nombre:
+                  type: string
+                about:
+                  type: string
+                horario:
+                  type: string
+                tarifa:
+                  type: string
+                whatsapp:
+                  type: string
+                telegram:
+                  type: string
+                mapa:
+                  type: string
+              required:
+                - nombre
+                - about
+                - horario
+                - tarifa
+                - whatsapp
+                - telegram
+                - mapa
       responses:
         '201':
-          description: Perfil creado
+          description: Perfil creado con tags iniciales
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Person'
+                $ref: '#/components/schemas/PersonWithTags'
+        '401':
+          description: Token inválido o ausente
+        '422':
+          description: Datos de validación inválidos
 
   /increment/{id}:
     get:
@@ -239,21 +387,37 @@ paths:
             type: integer
       responses:
         '200':
-          description: Vista incrementada
+          description: Vista incrementada exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  views:
+                    type: integer
+        '404':
+          description: Perfil no encontrado
 
   /upload/image/{personId}:
     post:
-      summary: Subir imagen (Admin)
+      summary: Subir imagen
+      description: "Requiere autenticación (IsUserAuth + IsAdmin). Rol requerido: Admin. Token como parámetro query."
       tags:
         - Media
-      security:
-        - bearerAuth: []
       parameters:
         - name: personId
           in: path
           required: true
           schema:
             type: integer
+        - name: token
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Token de autenticación (usuario Admin)
       requestBody:
         required: true
         content:
@@ -261,28 +425,49 @@ paths:
             schema:
               type: object
               properties:
-                image:
+                file:
                   type: string
                   format: binary
+                  description: Imagen JPG, JPEG, PNG o GIF. Máximo 2MB
       responses:
         '201':
           description: Imagen subida exitosamente
-        '422':
-          description: Error en la validación
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  media:
+                    $ref: '#/components/schemas/Media'
+        '400':
+          description: Archivo inválido
+        '401':
+          description: Token inválido o ausente
+        '403':
+          description: No autorizado. Se requiere rol Admin
+        '404':
+          description: Persona no encontrada
 
   /upload/video/{personId}:
     post:
-      summary: Subir video (Admin)
+      summary: Subir video
+      description: "Requiere autenticación (IsUserAuth + IsAdmin). Rol requerido: Admin. Token como parámetro query."
       tags:
         - Media
-      security:
-        - bearerAuth: []
       parameters:
         - name: personId
           in: path
           required: true
           schema:
             type: integer
+        - name: token
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Token de autenticación (usuario Admin)
       requestBody:
         required: true
         content:
@@ -290,12 +475,30 @@ paths:
             schema:
               type: object
               properties:
-                video:
+                file:
                   type: string
                   format: binary
+                  description: Video MP4, MOV, AVI o WMV. Máximo 10MB
       responses:
         '201':
           description: Video subido exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  media:
+                    $ref: '#/components/schemas/Media'
+        '400':
+          description: Archivo inválido
+        '401':
+          description: Token inválido o ausente
+        '403':
+          description: No autorizado. Se requiere rol Admin
+        '404':
+          description: Persona no encontrada
 
   /upload/image/{mediaId}:
     delete:
@@ -334,16 +537,21 @@ paths:
   /add-tag/{id}:
     post:
       summary: Agregar etiqueta a un perfil
+      description: "Requiere autenticación (IsUserAuth). Token como parámetro query."
       tags:
         - Tags
-      security:
-        - bearerAuth: []
       parameters:
         - name: id
           in: path
           required: true
           schema:
             type: integer
+        - name: token
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Token de autenticación
       requestBody:
         required: true
         content:
@@ -351,25 +559,47 @@ paths:
             schema:
               type: object
               properties:
-                tag_id:
-                  type: integer
+                valor:
+                  type: string
+                tipo:
+                  type: string
+              required:
+                - valor
+                - tipo
       responses:
         '201':
           description: Etiqueta agregada
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Tag'
+        '401':
+          description: Token inválido o ausente
+        '404':
+          description: Perfil no encontrado
+        '422':
+          description: Datos de validación inválidos
 
   /update-tag/{id}:
     put:
       summary: Actualizar etiqueta
+      description: "Requiere autenticación (IsUserAuth). Token como parámetro query."
       tags:
         - Tags
-      security:
-        - bearerAuth: []
       parameters:
         - name: id
           in: path
           required: true
           schema:
             type: integer
+        - name: token
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Token de autenticación
       requestBody:
         required: true
         content:
@@ -377,28 +607,54 @@ paths:
             schema:
               type: object
               properties:
-                name:
+                valor:
+                  type: string
+                tipo:
                   type: string
       responses:
         '200':
           description: Etiqueta actualizada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tag'
+        '401':
+          description: Token inválido o ausente
+        '404':
+          description: Etiqueta no encontrada
 
   /delete-tag/{id}:
     delete:
       summary: Eliminar etiqueta
+      description: "Requiere autenticación (IsUserAuth). Token como parámetro query."
       tags:
         - Tags
-      security:
-        - bearerAuth: []
       parameters:
         - name: id
           in: path
           required: true
           schema:
             type: integer
+        - name: token
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Token de autenticación
       responses:
-        '204':
+        '200':
           description: Etiqueta eliminada
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '401':
+          description: Token inválido o ausente
+        '404':
+          description: Etiqueta no encontrada
 
   /tags/add/{personId}:
     post:
@@ -524,17 +780,22 @@ paths:
 
   /subscriptions/{userId}:
     post:
-      summary: Crear suscripción (Admin)
+      summary: Crear o extender suscripción
+      description: "Requiere autenticación (IsUserAuth + IsAdmin). Rol requerido: Admin. Token como parámetro query. Si la suscripción existe y está activa, extiende la fecha. Si no existe, crea una nueva."
       tags:
         - Subscriptions
-      security:
-        - bearerAuth: []
       parameters:
         - name: userId
           in: path
           required: true
           schema:
             type: integer
+        - name: token
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Token de autenticación (usuario Admin)
       requestBody:
         required: true
         content:
@@ -542,53 +803,116 @@ paths:
             schema:
               type: object
               properties:
-                plan:
-                  type: string
-                  enum: [basic, premium, deluxe]
-                duration_days:
+                months:
                   type: integer
+                  example: 1
+              required:
+                - months
       responses:
         '201':
-          description: Suscripción creada
+          description: Suscripción creada o extendida exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  subscription:
+                    type: object
+                    properties:
+                      expires_at:
+                        type: string
+                        format: date-time
+        '401':
+          description: Token inválido o ausente
+        '403':
+          description: No autorizado. Se requiere rol Admin
+        '404':
+          description: Usuario o perfil no encontrado
+        '422':
+          description: Datos de validación inválidos
 
   /subscriptions/check:
     get:
-      summary: Verificar suscripciones (Admin)
+      summary: Verificar y actualizar estado de suscripciones
+      description: "Requiere autenticación (IsUserAuth + IsAdmin). Rol requerido: Admin. Token como parámetro query. Verifica todas las suscripciones y cambia a estado suspendido las que hayan expirado."
       tags:
         - Subscriptions
-      security:
-        - bearerAuth: []
+      parameters:
+        - name: token
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Token de autenticación (usuario Admin)
       responses:
         '200':
-          description: Estado de suscripciones
+          description: Verificación completada
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  subscriptions_checked:
+                    type: integer
+                  subscriptions_updated:
+                    type: integer
+        '401':
+          description: Token inválido o ausente
+        '403':
+          description: No autorizado. Se requiere rol Admin
 
   /profile/visit:
     post:
-      summary: Registrar visita de perfil (Models)
+      summary: Registrar visita de perfil
+      description: "Requiere autenticación (IsUserAuth + IsModel). Rol requerido: Model. Token como parámetro query. Registra una visita de la persona del usuario autenticado."
       tags:
         - Profile
-      security:
-        - bearerAuth: []
+      parameters:
+        - name: token
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Token de autenticación (usuario Model)
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
-              properties:
-                person_id:
-                  type: integer
+              properties: {}
       responses:
         '201':
-          description: Visita registrada
+          description: Visita registrada exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '401':
+          description: Token inválido o ausente
+        '403':
+          description: No autorizado. Se requiere rol Model. También si el usuario no tiene perfil válido.
 
   /profile/visits/last-7-days:
     get:
-      summary: Obtener visitas últimos 7 días (Models)
+      summary: Obtener visitas de los últimos 7 días
+      description: "Requiere autenticación (IsUserAuth + IsModel). Rol requerido: Model. Token como parámetro query."
       tags:
         - Profile
-      security:
-        - bearerAuth: []
+      parameters:
+        - name: token
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Token de autenticación (usuario Model)
       responses:
         '200':
           description: Visitas del período
@@ -598,36 +922,66 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/ProfileVisit'
+        '401':
+          description: Token inválido o ausente
+        '403':
+          description: No autorizado. Se requiere rol Model
 
   /profile/visits/last-month:
     get:
-      summary: Obtener visitas último mes (Models)
+      summary: Obtener visitas del último mes
+      description: "Requiere autenticación (IsUserAuth + IsModel). Rol requerido: Model. Token como parámetro query."
       tags:
         - Profile
-      security:
-        - bearerAuth: []
+      parameters:
+        - name: token
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Token de autenticación (usuario Model)
       responses:
         '200':
           description: Visitas del período
+        '401':
+          description: Token inválido o ausente
+        '403':
+          description: No autorizado. Se requiere rol Model
 
   /profile/visits/last-3-months:
     get:
-      summary: Obtener visitas últimos 3 meses (Models)
+      summary: Obtener visitas de los últimos 3 meses
+      description: "Requiere autenticación (IsUserAuth + IsModel). Rol requerido: Model. Token como parámetro query."
       tags:
         - Profile
-      security:
-        - bearerAuth: []
+      parameters:
+        - name: token
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Token de autenticación (usuario Model)
       responses:
         '200':
           description: Visitas del período
+        '401':
+          description: Token inválido o ausente
+        '403':
+          description: No autorizado. Se requiere rol Model
 
   /profile/suscription:
     get:
-      summary: Obtener información de suscripción (Models)
+      summary: Obtener información de suscripción
+      description: "Requiere autenticación (IsUserAuth + IsModel). Rol requerido: Model. Token como parámetro query."
       tags:
         - Profile
-      security:
-        - bearerAuth: []
+      parameters:
+        - name: token
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Token de autenticación (usuario Model)
       responses:
         '200':
           description: Información de suscripción
@@ -635,6 +989,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Subscription'
+        '401':
+          description: Token inválido o ausente
+        '403':
+          description: No autorizado. Se requiere rol Model
 
   /typeOfBody:
     get:
@@ -720,10 +1078,16 @@ paths:
   /ubicaciones:
     post:
       summary: Guardar ubicación
+      description: "Requiere autenticación (IsUserAuth). Token como parámetro query."
       tags:
         - Location
-      security:
-        - bearerAuth: []
+      parameters:
+        - name: token
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Token de autenticación
       requestBody:
         required: true
         content:
@@ -740,6 +1104,8 @@ paths:
       responses:
         '201':
           description: Ubicación guardada
+        '401':
+          description: Token inválido o ausente
 
   /usuarios-cerca:
     get:
@@ -825,37 +1191,98 @@ paths:
 
   /admin/register:
     post:
-      summary: Registrar asistente (Admin)
+      summary: Registrar asistente o admin
+      description: "Requiere autenticación (IsUserAuth + IsAdmin). Rol requerido: Admin. Token como parámetro query."
       tags:
         - Admin
-      security:
-        - bearerAuth: []
+      parameters:
+        - name: token
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Token de autenticación (usuario Admin)
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserRegister'
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: Carlos Rodríguez
+                email:
+                  type: string
+                  example: carlos@example.com
+                password:
+                  type: string
+                  example: password123
+                password_confirmation:
+                  type: string
+                  example: password123
+                rol:
+                  type: string
+                  enum: [Admin, Assistant]
+              required:
+                - name
+                - email
+                - password
+                - password_confirmation
+                - rol
       responses:
         '201':
-          description: Asistente registrado
+          description: Usuario registrado exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  user:
+                    $ref: '#/components/schemas/User'
+        '401':
+          description: Token inválido o ausente
+        '403':
+          description: No autorizado. Se requiere rol Admin
+        '422':
+          description: Datos de validación inválidos
 
   /admin/delete/{id}:
     delete:
-      summary: Eliminar usuario (Admin)
+      summary: Eliminar usuario
+      description: "Requiere autenticación (IsUserAuth + IsAdmin). Rol requerido: Admin. Token como parámetro query."
       tags:
         - Admin
-      security:
-        - bearerAuth: []
       parameters:
         - name: id
           in: path
           required: true
           schema:
             type: integer
+        - name: token
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Token de autenticación (usuario Admin)
       responses:
-        '204':
-          description: Usuario eliminado
+        '200':
+          description: Usuario eliminado exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '401':
+          description: Token inválido o ausente
+        '403':
+          description: No autorizado. Se requiere rol Admin
+        '404':
+          description: Usuario no encontrado
 
 components:
   schemas:
@@ -904,27 +1331,96 @@ components:
           type: integer
         user_id:
           type: integer
-        name:
+        nombre:
           type: string
-        age:
-          type: integer
-        bio:
+        about:
           type: string
-        visibility:
+        horario:
           type: string
-          enum: [public, private]
-        views:
-          type: integer
+        tarifa:
+          type: string
+        whatsapp:
+          type: string
+        telegram:
+          type: string
+        mapa:
+          type: string
+        is_visible:
+          type: boolean
         created_at:
           type: string
           format: date-time
         updated_at:
           type: string
           format: date-time
+
+    PersonWithMedia:
+      type: object
+      properties:
+        id:
+          type: integer
+        user_id:
+          type: integer
+        nombre:
+          type: string
+        about:
+          type: string
+        horario:
+          type: string
+        tarifa:
+          type: string
+        whatsapp:
+          type: string
+        telegram:
+          type: string
+        mapa:
+          type: string
+        is_visible:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        tags:
+          type: array
+          items:
+            $ref: '#/components/schemas/Tag'
         media:
           type: array
           items:
             $ref: '#/components/schemas/Media'
+
+    PersonWithTags:
+      type: object
+      properties:
+        id:
+          type: integer
+        user_id:
+          type: integer
+        nombre:
+          type: string
+        about:
+          type: string
+        horario:
+          type: string
+        tarifa:
+          type: string
+        whatsapp:
+          type: string
+        telegram:
+          type: string
+        mapa:
+          type: string
+        is_visible:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
         tags:
           type: array
           items:
@@ -977,10 +1473,20 @@ components:
       properties:
         id:
           type: integer
-        name:
-          type: string
         person_id:
           type: integer
+        tipo:
+          type: string
+          example: about_me
+        valor:
+          type: string
+          example: Soy una persona amable y divertida
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
 
     Media:
       type: object
@@ -992,9 +1498,13 @@ components:
         type:
           type: string
           enum: [image, video]
-        url:
+        file_path:
           type: string
+          example: storage/images/uuid.jpg
         created_at:
+          type: string
+          format: date-time
+        updated_at:
           type: string
           format: date-time
 
@@ -1027,25 +1537,26 @@ components:
           type: integer
         user_id:
           type: integer
-        plan:
+        expires_at:
           type: string
-        start_date:
+          format: date-time
+        status:
+          type: integer
+          example: 1
+          description: 1=activa, 3=suspendida por pago
+        created_at:
           type: string
-          format: date
-        end_date:
+          format: date-time
+        updated_at:
           type: string
-          format: date
-        active:
-          type: boolean
+          format: date-time
 
     ProfileVisit:
       type: object
       properties:
         id:
           type: integer
-        person_id:
-          type: integer
-        visitor_id:
+        profile_id:
           type: integer
         created_at:
           type: string
